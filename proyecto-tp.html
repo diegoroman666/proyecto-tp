@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluación y Gestión de Proyectos - LIR 2026</title>
+    <meta name="description" content="Semana TP - Liceo Industrial de Rengo 2026. Evaluación de proyectos (flujo de caja, VAN, TIR) y Gestión de proyectos (alcance, Carta Gantt, control) en un solo sitio.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Orbitron', 'sans-serif'],
+                    },
+                    colors: {
+                        neon: {
+                            blue: '#00f3ff',
+                            purple: '#bc13fe',
+                            green: '#00ff66'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            background-color: #050505;
+            color: #ffffff;
+        }
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        /* El brillo del hover cambia segun el modulo activo */
+        .theme-eval .hover-glow:hover {
+            border-color: #00f3ff;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+        .theme-gest .hover-glow:hover {
+            border-color: #00ff66;
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+        .text-gradient {
+            background: linear-gradient(to right, #00f3ff, #bc13fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .text-gradient-green {
+            background: linear-gradient(to right, #00ff66, #bc13fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 102, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 255, 102, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 102, 0); }
+        }
+        @keyframes pulse-purple {
+            0% { box-shadow: 0 0 0 0 rgba(188, 19, 254, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(188, 19, 254, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(188, 19, 254, 0); }
+        }
+        .indicator-pulse {
+            animation: pulse-green 2s infinite;
+        }
+        /* Vistas: solo un modulo visible a la vez */
+        .view[hidden] { display: none; }
+        .view { animation: view-in 0.45s ease both; }
+        @keyframes view-in {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .view { animation: none; }
+            html { scroll-behavior: auto; }
+        }
+    </style>
+</head>
+<body class="antialiased relative">
+
+    <div id="canvas-container"></div>
+
+    <!-- ==================== MÓDULO 1: EVALUACIÓN DE PROYECTOS ==================== -->
+    <div id="view-evaluacion" data-view="evaluacion" class="view theme-eval selection:bg-neon-purple selection:text-white">
+    <nav class="fixed w-full z-50 glass-panel border-b-0 py-4 px-6 top-0">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="font-display font-bold text-xl tracking-wider text-white flex items-center">
+                    <img data-logo="true" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRVEKYQQ5vwZ5vMYTE9YW8s_D5wbwCefzcOJg8ABsXltLy1JUdsefR_u4&s=10" alt="LIR Logo" class="w-11 h-11 rounded-full object-cover border-2 border-neon-blue mr-3 shadow-md shadow-neon-blue/25 transition-opacity duration-500">
+                    LIR <span class="text-neon-purple ml-1">2026</span>
+                </div>
+                <div class="hidden md:flex space-x-3 text-sm font-semibold text-gray-300">
+                    <a href="#ev-e1" class="hover:text-neon-blue transition">Etapa 1</a>
+                    <a href="#ev-e2" class="hover:text-neon-blue transition">Etapa 2</a>
+                    <a href="#ev-e3" class="hover:text-neon-blue transition">Etapa 3</a>
+                    <a href="#ev-e4" class="hover:text-neon-blue transition">Etapa 4</a>
+                    <a href="#ev-e5" class="hover:text-neon-blue transition">Etapa 5</a>
+                    <a href="#ev-caso" class="px-4 py-1 bg-neon-blue/20 border border-neon-blue text-neon-blue rounded-full hover:bg-neon-blue hover:text-black transition">Caso Práctico</a>
+                    <a href="#/gestion" class="ml-4 px-4 py-1.5 bg-neon-green/10 border border-neon-green text-neon-green rounded-full hover:bg-neon-green hover:text-black transition flex items-center gap-2 shadow-[0_0_10px_rgba(0,255,102,0.2)]">
+                        Ir a Gestión <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+                <a href="#/gestion" class="md:hidden px-3 py-1.5 text-xs font-bold bg-neon-green/10 border border-neon-green text-neon-green rounded-full whitespace-nowrap">Gestión →</a>
+            </div>
+        </nav>
+    <main class="relative z-10 pt-32 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center">
+            <div class="text-center max-w-4xl mx-auto mt-8 mb-20">
+                <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-neon-purple/50 bg-neon-purple/10 text-neon-purple text-xs font-bold tracking-widest uppercase mb-6 shadow-lg">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRVEKYQQ5vwZ5vMYTE9YW8s_D5wbwCefzcOJg8ABsXltLy1JUdsefR_u4&s=10" alt="Insignia" class="w-7 h-7 rounded-full object-cover border-2 border-neon-purple">
+                    <span>SEMANA TP - LICEO INDUSTRIAL DE RENGO</span>
+                </div>
+                <h1 class="font-display text-5xl md:text-7xl font-black mb-6 leading-tight">
+                    Del Taller al <br>
+                    <span class="text-gradient">Mercado Real</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+                    No basta con que tu portón automático funcione, tu circuito encienda o tu estructura metálica esté perfectamente soldada. El verdadero desafío profesional radica en transformar tus habilidades técnicas e ingenio en un modelo de negocio sostenible, competitivo y rentable.
+                </p>
+                <div class="p-6 rounded-2xl bg-neon-blue/10 border border-neon-blue/30 max-w-3xl mx-auto text-neon-blue text-base md:text-lg font-medium shadow-lg backdrop-blur-md leading-relaxed">
+                    ¿Cómo se evalúa un proyecto? ¿Cómo saber si es rentable y viable por medio de indicadores de factibilidad? A continuación, recorreremos paso a paso los fundamentos financieros para convertir tu talento técnico en un negocio exitoso y sostenible que marque la diferencia en el mercado actual.
+                </div>
+            </div>
+
+            <div class="w-full h-12" id="ev-e1"></div>
+            <section class="w-full mb-24 pt-8">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 rounded-lg bg-neon-blue/20 flex items-center justify-center border border-neon-blue mr-4 shadow-lg shadow-neon-blue/10">
+                        <span class="font-display font-bold text-neon-blue text-xl">01</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-neon-blue uppercase tracking-widest font-semibold">Fundamentos</span>
+                        <h2 class="font-display text-3xl font-bold">Etapa 1: Generación y Definición de la Idea</h2>
+                    </div>
+                </div>
+                <p class="text-gray-400 mb-8 max-w-3xl leading-relaxed">En esta etapa inicial realizamos la transición mental del <em>"¡mira lo que sé armar en el taller!"</em> al <em>"¿qué problema real del mercado resuelve mi creación y quién pagará por ella?"</em>.</p>
+            
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-panel p-8 rounded-2xl hover-glow transition">
+                        <i class="fa-solid fa-seedling text-4xl text-neon-blue mb-4"></i>
+                        <h3 class="text-xl font-bold mb-3">Introducción Teórica</h3>
+                        <p class="text-sm text-gray-300 mb-4"><strong class="text-white">Concepto:</strong> Todo proyecto de inversión se origina como respuesta estructurada para satisfacer una necesidad insatisfecha o solucionar una deficiencia operativa en la comunidad o la industria.</p>
+                        <div class="border-l-2 border-neon-blue pl-3">
+                            <p class="text-xs text-neon-blue font-bold uppercase mb-1">El Enfoque Técnico</p>
+                            <p class="text-sm text-gray-400">Desplazar el foco desde el "producto material" hacia la "solución de valor integral".</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-2xl hover-glow transition">
+                        <i class="fa-solid fa-cloud-bolt text-4xl text-yellow-400 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-3">Generación de la Idea</h3>
+                        <p class="text-sm text-gray-300 mb-4"><strong class="text-white">Concepto:</strong> Fase de lluvia de ideas (Brainstorming) donde los estudiantes examinan su entorno local, detectando cuellos de botella, carencias o requerimientos técnicos.</p>
+                        <div class="border-l-2 border-yellow-400 pl-3">
+                            <p class="text-xs text-yellow-400 font-bold uppercase mb-1">Ejemplo en Rengo</p>
+                            <p class="text-sm text-gray-400">Observar que los fundos agrícolas y packings de frutas sufren pérdidas por robos nocturnos o gastan demasiada energía con sistemas de iluminación obsoletos.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-2xl hover-glow transition border-neon-purple/50">
+                        <i class="fa-solid fa-crosshairs text-4xl text-neon-purple mb-4"></i>
+                        <h3 class="text-xl font-bold mb-3">Definición de Oportunidad</h3>
+                        <p class="text-sm text-gray-300 mb-4"><strong class="text-white">Concepto:</strong> Depuración y selección de la alternativa más viable para transformarla en una oportunidad concreta de negocio con especificaciones claras.</p>
+                        <div class="border-l-2 border-neon-purple pl-3">
+                            <p class="text-xs text-neon-purple font-bold uppercase mb-1">Ejemplo Práctico</p>
+                            <p class="text-sm text-gray-400">Pasar de "armar luces" a estructurar un <strong>"Sistema automatizado de iluminación LED de bajo consumo para packings de frutas"</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ev-e2" class="w-full mb-24 pt-16">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 rounded-lg bg-neon-purple/20 flex items-center justify-center border border-neon-purple mr-4 shadow-lg shadow-neon-purple/10">
+                        <span class="font-display font-bold text-neon-purple text-xl">02</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-neon-purple uppercase tracking-widest font-semibold">Planificación</span>
+                        <h2 class="font-display text-3xl font-bold">Etapa 2: Formulación y Preparación del Proyecto</h2>
+                    </div>
+                </div>
+                <p class="text-gray-400 mb-8 max-w-3xl leading-relaxed">Respondemos rigurosamente a la interrogante: <em>¿Cómo lo vamos a ejecutar y qué recursos necesitamos?</em> Antes de comprometer capital, el proyecto se somete a cuatro estudios fundamentales.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl hover-glow transition">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-3 bg-blue-500/20 rounded-lg text-blue-400"><i class="fa-solid fa-users text-xl"></i></div>
+                            <h4 class="font-bold text-xl text-blue-400">Estudio de Mercado</h4>
+                        </div>
+                        <p class="text-sm text-gray-300 mb-3"><strong class="text-white">Teoría:</strong> Identificación del cliente objetivo, cuantificación de la demanda insatisfecha, análisis de precios de mercado y estudio de la competencia directa e indirecta.</p>
+                        <div class="bg-black/30 p-3 rounded-lg border-l-2 border-blue-400">
+                            <p class="text-xs text-blue-400 font-bold uppercase mb-1">Ejemplo Estructuras Metálicas</p>
+                            <p class="text-sm text-gray-400">Investigar cuántas parcelas en la zona requieren rejas perimetrales y catastro de tarifas de talleres competidores.</p>
+                        </div>
+                    </div>
+                
+                    <div class="glass-panel p-6 rounded-2xl hover-glow transition">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-3 bg-orange-500/20 rounded-lg text-orange-400"><i class="fa-solid fa-gears text-xl"></i></div>
+                            <h4 class="font-bold text-xl text-orange-400">Estudio Técnico</h4>
+                        </div>
+                        <p class="text-sm text-gray-300 mb-3"><strong class="text-white">Teoría:</strong> Cuantificación de requerimientos operativos: maquinaria, herramientas, materias primas, espacio físico de taller y tiempos de fabricación.</p>
+                        <div class="bg-black/30 p-3 rounded-lg border-l-2 border-orange-400">
+                            <p class="text-xs text-orange-400 font-bold uppercase mb-1">Ejemplo Portón Corredizo</p>
+                            <p class="text-sm text-gray-400">Cálculo exacto de metros de perfil de acero, kilos de electrodos, especificaciones del motor eléctrico y horas-hombre requeridas.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl hover-glow transition">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-3 bg-red-500/20 rounded-lg text-red-400"><i class="fa-solid fa-scale-balanced text-xl"></i></div>
+                            <h4 class="font-bold text-xl text-red-400">Estudio Legal</h4>
+                        </div>
+                        <p class="text-sm text-gray-300 mb-3"><strong class="text-white">Teoría:</strong> Análisis del marco regulatorio, patentes comerciales, normativas municipales y exigencias de seguridad técnica obligatorias.</p>
+                        <div class="bg-black/30 p-3 rounded-lg border-l-2 border-red-400">
+                            <p class="text-xs text-red-400 font-bold uppercase mb-1">Ejemplo Cámaras de Seguridad</p>
+                            <p class="text-sm text-gray-400">Cumplimiento estricto de la Ley de Protección de la Vida Privada al enfocar espacios públicos y perímetros privados.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl hover-glow transition">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-3 bg-emerald-500/20 rounded-lg text-emerald-400"><i class="fa-solid fa-sitemap text-xl"></i></div>
+                            <h4 class="font-bold text-xl text-emerald-400">Estudio Administrativo</h4>
+                        </div>
+                        <p class="text-sm text-gray-300 mb-3"><strong class="text-white">Teoría:</strong> Estructuración del capital humano, definición de organigramas, perfiles de cargos operativos y gestión interna del equipo.</p>
+                        <div class="bg-black/30 p-3 rounded-lg border-l-2 border-emerald-400">
+                            <p class="text-xs text-emerald-400 font-bold uppercase mb-1">Ejemplo Equipo de Taller</p>
+                            <p class="text-sm text-gray-400">Asignación de roles: diseñador CAD, operario de soldadura, encargado de adquisiciones y jefe comercial.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ev-e3" class="w-full mb-24 pt-16">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 rounded-lg bg-neon-green/20 flex items-center justify-center border border-neon-green mr-4 shadow-lg shadow-neon-green/10">
+                        <span class="font-display font-bold text-neon-green text-xl">03</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-neon-green uppercase tracking-widest font-semibold">Estructura Financiera</span>
+                        <h2 class="font-display text-3xl font-bold">Etapa 3: Estructura del Flujo de Caja</h2>
+                    </div>
+                </div>
+                <p class="text-gray-400 mb-8 max-w-3xl leading-relaxed">El Flujo de Caja registra cronológicamente los ingresos y egresos de efectivo. Para una evaluación profesional, distinguimos dos modalidades:</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-panel p-8 rounded-2xl border-t-2 border-neon-blue hover-glow transition">
+                        <h3 class="text-2xl font-bold mb-3 text-white">1. Flujo de Caja Puro</h3>
+                        <p class="text-sm text-gray-300 mb-4">Evalúa la rentabilidad intrínseca del proyecto, asumiendo que el 100% del capital inicial proviene de los ahorros propios del emprendedor.</p>
+                        <div class="bg-black/30 p-4 rounded-lg border-l-2 border-neon-blue">
+                            <ul class="text-sm text-gray-400 space-y-2 list-disc pl-4">
+                                <li>La inversión inicial ($I_0$) se financia íntegramente con recursos propios.</li>
+                                <li>Ausencia total de cargas financieras o deudas bancarias.</li>
+                                <li>Permite medir la bondad económica pura del negocio.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-2xl border-t-2 border-neon-purple hover-glow transition">
+                        <h3 class="text-2xl font-bold mb-3 text-white">2. Flujo de Caja Financiado</h3>
+                        <p class="text-sm text-gray-300 mb-4">Mide la rentabilidad desde la perspectiva del inversionista cuando se combina el capital propio con un crédito bancario.</p>
+                        <div class="bg-black/30 p-4 rounded-lg border-l-2 border-neon-purple">
+                            <ul class="text-sm text-gray-400 space-y-2 list-disc pl-4">
+                                <li>El capital inicial se divide entre fondos propios y deuda externa.</li>
+                                <li>Se incorporan las cuotas de amortización del crédito como egreso.</li>
+                                <li>Demuestra el efecto apalancamiento en la recuperación de recursos.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ev-e4" class="w-full mb-24 pt-16">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 rounded-lg bg-yellow-500/20 flex items-center justify-center border border-yellow-500 mr-4 shadow-lg shadow-yellow-500/10">
+                        <span class="font-display font-bold text-yellow-500 text-xl">04</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-yellow-500 uppercase tracking-widest font-semibold">Indicadores Económicos</span>
+                        <h2 class="font-display text-3xl font-bold">Etapa 4: Indicadores de Factibilidad y VAN</h2>
+                    </div>
+                </div>
+            
+                <div class="glass-panel p-8 rounded-3xl border-l-4 border-neon-blue mb-8">
+                    <div class="flex flex-col lg:flex-row gap-8 items-center">
+                        <div class="flex-1">
+                            <h3 class="text-3xl font-display font-bold mb-4">Análisis Profundo del VAN</h3>
+                            <p class="text-gray-300 mb-4 leading-relaxed">El Valor Actual Neto (VAN) traslada todos los flujos monetarios futuros al valor presente mediante una tasa de descuento, determinando si el proyecto genera riqueza real por encima de la rentabilidad exigida.</p>
+                        
+                            <div class="space-y-4 text-sm mt-6">
+                                <div class="bg-black/40 p-4 rounded-lg border border-gray-700 flex items-center">
+                                    <div class="font-bold text-red-400 w-20 text-2xl">-I<sub class="text-xs">0</sub></div>
+                                    <div><strong class="text-white">Inversión Inicial:</strong> Desembolso de capital en el periodo cero (maquinaria, instalaciones, herramientas).</div>
+                                </div>
+                                <div class="bg-black/40 p-4 rounded-lg border border-gray-700 flex items-center">
+                                    <div class="font-bold text-neon-green w-20 text-2xl">F<sub class="text-xs">t</sub></div>
+                                    <div><strong class="text-white">Flujo Neto del periodo (t):</strong> Beneficio neto operativo de cada año tras deducir costos y gastos.</div>
+                                </div>
+                                <div class="bg-black/40 p-4 rounded-lg border border-gray-700 flex items-center">
+                                    <div class="font-bold text-neon-blue w-20 text-xl">(1+i)<sup class="text-xs">t</sup></div>
+                                    <div><strong class="text-white">Tasa de Descuento (i):</strong> Tasa mínima de rentabilidad exigida o costo de oportunidad del capital.</div>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="w-full lg:w-5/12 bg-gray-950/80 p-6 rounded-2xl border border-neon-blue/30 text-center shadow-2xl">
+                            <p class="text-xs text-neon-blue uppercase tracking-widest mb-4 font-bold">Modelo Matemático del VAN</p>
+                            <div class="flex justify-center items-center space-x-2 text-2xl font-serif text-white py-6 bg-black/50 rounded-xl mb-6 border border-gray-800">
+                                <span>VAN = <span class="text-red-400">-I<sub>0</sub></span> +</span>
+                                <span class="text-5xl font-light text-neon-blue">&sum;</span>
+                                <div class="flex flex-col items-center">
+                                    <span class="border-b border-gray-400 px-3 pb-1 text-neon-green">F<sub>t</sub></span>
+                                    <span class="pt-1 text-neon-blue">(1 + i)<sup>t</sup></span>
+                                </div>
+                            </div>
+                            <div class="text-left bg-gray-900 p-4 rounded-lg text-sm text-gray-300 space-y-3">
+                                <p><i class="fa-solid fa-circle-check text-neon-green mr-2"></i><strong>Si VAN > 0:</strong> Genera valor superior al costo de capital. <strong>¡Proyecto viable!</strong></p>
+                                <p><i class="fa-solid fa-circle-xmark text-red-500 mr-2"></i><strong>Si VAN < 0:</strong> No cubre las expectativas de rentabilidad. <strong>Se rechaza.</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl border-t-2 border-yellow-500 hover-glow transition">
+                        <h3 class="text-xl font-display font-bold text-white mb-2"><i class="fa-solid fa-stopwatch mr-2 text-yellow-500"></i>PRI (Periodo de Recuperación)</h3>
+                        <p class="text-sm text-gray-300"><strong class="text-white">Definición:</strong> Lapso cronometrado que requiere el proyecto para recuperar íntegramente la inversión inicial mediante los flujos netos generados.</p>
+                    </div>
+                    <div class="glass-panel p-6 rounded-2xl border-t-2 border-neon-purple hover-glow transition">
+                        <h3 class="text-xl font-display font-bold text-white mb-2"><i class="fa-solid fa-percent mr-2 text-neon-purple"></i>TIR (Tasa Interna de Retorno)</h3>
+                        <p class="text-sm text-gray-300"><strong class="text-white">Definición:</strong> Tasa porcentual de rendimiento que iguala el VAN a cero. Representa la rentabilidad real interna del negocio.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ev-e5" class="w-full mb-24 pt-16">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 rounded-lg bg-pink-500/20 flex items-center justify-center border border-pink-500 mr-4 shadow-lg shadow-pink-500/10">
+                        <span class="font-display font-bold text-pink-500 text-xl">05</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-pink-500 uppercase tracking-widest font-semibold">Comercialización</span>
+                        <h2 class="font-display text-3xl font-bold">Etapa 5: Marketing y Posicionamiento de Mercado</h2>
+                    </div>
+                </div>
+                <p class="text-gray-400 mb-8 max-w-3xl leading-relaxed">Disponer de una solución técnica impecable no asegura ventas automáticas. El marketing estratégico constituye el puente operativo entre el taller industrial y el cliente final.</p>
+
+                <div class="glass-panel p-8 rounded-3xl border-l-4 border-pink-500 hover-glow transition">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-2xl font-display font-bold mb-4 text-white"><i class="fa-solid fa-bullhorn text-pink-500 mr-2"></i>La Propuesta de Valor</h3>
+                            <p class="text-sm text-gray-300 mb-4 leading-relaxed"><strong class="text-white">Concepto:</strong> Definición precisa de los atributos diferenciadores por los cuales el mercado elegirá nuestro producto técnico por encima de la competencia directa.</p>
+                            <ul class="text-sm text-gray-400 space-y-2 list-disc pl-4">
+                                <li>Identificación de dolores específicos del cliente industrial o domiciliario.</li>
+                                <li>Estrategias de precios competitivos y canales directos de distribución.</li>
+                                <li>Comunicación de calidad certificada y garantía de servicio postventa.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-black/40 p-6 rounded-xl border border-pink-500/30">
+                            <p class="text-xs text-pink-500 font-bold uppercase mb-2">Aplicación Práctica en Rengo</p>
+                            <p class="text-sm text-gray-300 mb-3">En lugar de un letrero pasivo, estructuramos una campaña comercial activa:</p>
+                            <div class="space-y-3 mt-4">
+                                <div class="flex items-start">
+                                    <i class="fa-brands fa-instagram text-pink-400 mt-1 mr-3 text-lg"></i>
+                                    <span class="text-xs text-gray-400"><strong class="text-white">Redes Sociales:</strong> Publicación de demostraciones en video (antes y después) mostrando la velocidad y robustez de los portones y cámaras instaladas.</span>
+                                </div>
+                                <div class="flex items-start">
+                                    <i class="fa-solid fa-handshake text-pink-400 mt-1 mr-3 text-lg"></i>
+                                    <span class="text-xs text-gray-400"><strong class="text-white">Alianzas Estratégicas:</strong> Convenios directos con constructoras locales para ofrecer packs de automatización en parcelas de agrado.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ev-caso" class="w-full pt-16">
+                <div class="text-center mb-12">
+                    <div class="inline-block px-4 py-1 rounded-full border border-neon-purple/50 bg-neon-purple/10 text-neon-purple text-xs font-bold tracking-widest uppercase mb-4">
+                        Demostración Práctica Estudiantil
+                    </div>
+                    <h2 class="font-display text-4xl font-bold text-white mb-4">Proyección Financiera a 5 Años: Taller de Portones</h2>
+                    <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed">Para implementar un taller de fabricación metálica e instalación de portones se requiere una inversión inicial de <strong>$5.000.000</strong> en maquinaria y herramientas. Analizaremos en detalle el desglose operativo comparando el escenario Puro frente al Financiado.</p>
+                </div>
+
+                <!-- Caso A: Flujo Puro -->
+                <div class="glass-panel rounded-3xl p-1 md:p-2 overflow-hidden border border-neon-blue/50 shadow-2xl relative mb-12">
+                    <div class="bg-gray-900/95 rounded-2xl p-6 md:p-8">
+                        <h3 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-wallet text-neon-blue mr-2"></i>Caso A: Flujo de Caja PURO (100% Capital Propios)</h3>
+                        <p class="text-gray-400 text-sm mb-6">Desglose completo de inversión, ingresos, costos y gastos operativos asumidos en su totalidad por el estudiante sin financiamiento externo.</p>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left font-mono text-xs md:text-sm whitespace-nowrap">
+                                <thead>
+                                    <tr class="text-gray-400 border-b border-gray-700">
+                                        <th class="py-3 px-4 font-normal">Partida del Flujo</th>
+                                        <th class="py-3 px-4 font-normal text-right">Año 0</th>
+                                        <th class="py-3 px-4 font-normal text-right">Año 1</th>
+                                        <th class="py-3 px-4 font-normal text-right">Año 2</th>
+                                        <th class="py-3 px-4 font-normal text-right">Año 3</th>
+                                        <th class="py-3 px-4 font-normal text-right">Año 4</th>
+                                        <th class="py-3 px-4 font-normal text-right">Año 5</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-800 bg-black/20">
+                                        <td class="py-3 px-4 text-white font-bold">Inversión en Activos (Maquinaria)</td>
+                                        <td class="py-3 px-4 text-right text-red-400 font-bold">-$5.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-green-400"><i class="fa-solid fa-plus mr-2"></i>Ingresos por Ventas</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Operativos (Fierros/Insumos)</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Fijos (Arriendo/Luz Taller)</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Gastos Administrativos y Marketing</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
+                                    </tr>
+                                    <tr class="bg-white/5 font-bold text-sm">
+                                        <td class="py-4 px-4 text-white uppercase tracking-wider">Flujo Neto Anual</td>
+                                        <td class="py-4 px-4 text-right text-red-400">-$5.000.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-blue">+$2.000.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-blue">+$2.000.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-blue">+$2.000.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-blue">+$2.000.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-blue">+$2.000.000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div class="bg-black/40 p-4 rounded-xl border border-neon-blue/30 text-sm text-gray-300 flex-1">
+                                <p class="font-bold text-neon-blue mb-1"><i class="fa-solid fa-circle-info mr-2"></i>Conclusión del Flujo Puro:</p>
+                                <p>Al no tener deudas bancarias, el 100% de la inversión inicial sale del bolsillo del estudiante ($5.000.000). Aunque el negocio es sólido y genera un flujo neto constante de $2.000.000 anuales, el periodo de recuperación se extiende hasta los <strong>2.5 años</strong> debido a que todo el peso recae en recursos propios.</p>
+                            </div>
+                            <div class="bg-neon-blue/10 border border-neon-blue p-4 rounded-xl text-right min-w-[220px]">
+                                <span class="text-gray-400 text-xs block uppercase">Periodo Recuperación (PRI)</span>
+                                <span class="text-xl font-bold text-white">2.5 Años <span class="text-xs font-normal text-gray-400">(Mediados Año 3)</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Caso B: Flujo Financiado -->
+                <div class="glass-panel rounded-3xl p-1 md:p-2 overflow-hidden border border-neon-purple/50 shadow-2xl relative">
+                    <div class="bg-gray-900/95 rounded-2xl p-6 md:p-8">
+                        <h3 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-building-columns text-neon-purple mr-2"></i>Caso B: Flujo de Caja FINANCIADO (Con Préstamo Bancario)</h3>
+                        <p class="text-gray-400 text-sm mb-6">El estudiante invierte $2.000.000 propios y solicita un crédito comercial por $3.000.000, comprometiendo cuotas anuales de $800.000.</p>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left font-mono text-xs md:text-sm whitespace-nowrap">
+                                <thead>
+                                    <tr class="text-gray-400 border-b border-gray-700">
+                                        <th class="py-3 px-4 font-normal">Partida del Flujo</th>
+                                        <th class="py-3 px-4 font-normal text-right">Año 0</th>
+                                        <th class="py-3 px-4 font-normal text-right">Año 1</th>
+                                        <th class="py-3 px-4 font-normal text-right">Año 2</th>
+                                        <th class="py-3 px-4 font-normal text-right">Año 3</th>
+                                        <th class="py-3 px-4 font-normal text-right">Año 4</th>
+                                        <th class="py-3 px-4 font-normal text-right">Año 5</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-800 bg-black/20">
+                                        <td class="py-3 px-4 text-white font-bold">Inversión Propia en Activos</td>
+                                        <td class="py-3 px-4 text-right text-red-400 font-bold">-$2.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-green-400"><i class="fa-solid fa-plus mr-2"></i>Ingresos por Ventas</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Operativos (Fierros/Insumos)</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Fijos (Arriendo/Luz Taller)</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Gastos Administrativos y Marketing</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800 bg-yellow-900/25">
+                                        <td class="py-3 px-4 text-yellow-400"><i class="fa-solid fa-arrow-down mr-2 text-xs"></i>Cuota Préstamo Bancario</td>
+                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-3 px-4 text-right text-yellow-400">-$800.000</td>
+                                        <td class="py-3 px-4 text-right text-yellow-400">-$800.000</td>
+                                        <td class="py-3 px-4 text-right text-yellow-400">-$800.000</td>
+                                        <td class="py-3 px-4 text-right text-yellow-400">-$800.000</td>
+                                        <td class="py-3 px-4 text-right text-yellow-400">-$800.000</td>
+                                    </tr>
+                                    <tr class="bg-white/5 font-bold text-sm">
+                                        <td class="py-4 px-4 text-white uppercase tracking-wider">Flujo Neto para el Estudiante</td>
+                                        <td class="py-4 px-4 text-right text-red-400">-$2.000.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-purple">+$1.200.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-purple">+$1.200.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-purple">+$1.200.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-purple">+$1.200.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-purple">+$1.200.000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+                            <div class="bg-black/40 p-4 rounded-xl border border-neon-purple/30 text-sm text-gray-300 flex-1">
+                                <p class="font-bold text-neon-purple mb-1"><i class="fa-solid fa-circle-info mr-2"></i>Conclusión del Flujo Financiado (Apalancamiento):</p>
+                                <p>Mediante el uso inteligente de un crédito de $3.000.000, el estudiante reduce su exposición de riesgo arriesgando sólo $2.000.000 propios. Aunque se descuenta la cuota anual del préstamo ($800.000), el flujo neto sigue siendo atractivo ($1.200.000 anuales) y permite acelerar el retorno de la inversión a sólo <strong>1.6 años</strong>.</p>
+                            </div>
+                            <div class="bg-neon-purple/10 border border-neon-purple p-4 rounded-xl text-right min-w-[220px]">
+                                <span class="text-gray-400 text-xs block uppercase">Periodo Recuperación (PRI)</span>
+                                <span class="text-xl font-bold text-white">1.6 Años <span class="text-xs font-normal text-gray-400">(Aprox 1 año 8 meses)</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="w-full mt-24">
+                <a href="#/gestion" class="block glass-panel rounded-3xl p-8 md:p-10 border border-neon-green/40 hover:border-neon-green transition group text-center">
+                    <span class="text-xs uppercase tracking-widest text-neon-green font-bold">Siguiente módulo</span>
+                    <h3 class="font-display text-2xl md:text-3xl font-bold text-white mt-3 mb-3">Ya sabes si el proyecto es rentable… ahora hay que ejecutarlo</h3>
+                    <p class="text-gray-400 max-w-2xl mx-auto mb-6 leading-relaxed">La evaluación responde <strong class="text-white">¿conviene invertir?</strong> La gestión responde <strong class="text-white">¿cómo lo llevamos a cabo a tiempo y sin perder el control?</strong></p>
+                    <span class="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-neon-green/15 border border-neon-green text-neon-green font-bold group-hover:bg-neon-green group-hover:text-black transition">
+                        Ir a Gestión de Proyectos <i class="fa-solid fa-arrow-right"></i>
+                    </span>
+                </a>
+            </section>
+
+            <footer class="mt-28 mb-8 text-center text-gray-400 text-sm border-t border-gray-800 pt-8 leading-relaxed">
+                Sitio desarrollado por Diego Román Muñoz Ingeniero en Informática &copy; derechos reservados 2026 Chile<br>
+                <span class="text-neon-blue font-semibold">Semana TP - Liceo Industrial de Rengo (LIR 2026)</span><br>
+                <span class="text-gray-500 text-xs mt-1 block">Demostrando que la técnica y las matemáticas construyen el éxito empresarial.</span>
+            </footer>
+        </main>
+    </div>
+
+    <!-- ==================== MÓDULO 2: GESTIÓN DE PROYECTOS ==================== -->
+    <div id="view-gestion" data-view="gestion" class="view theme-gest selection:bg-neon-green selection:text-black" hidden>
+    <nav class="fixed w-full z-50 glass-panel border-b-0 py-4 px-6 top-0">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="font-display font-bold text-xl tracking-wider text-white flex items-center">
+                    <img data-logo="true" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRVEKYQQ5vwZ5vMYTE9YW8s_D5wbwCefzcOJg8ABsXltLy1JUdsefR_u4&s=10" alt="LIR Logo" class="w-11 h-11 rounded-full object-cover border-2 border-neon-green mr-3 shadow-md shadow-neon-green/25 transition-opacity duration-500">
+                    LIR <span class="text-neon-green ml-1">2026</span>
+                </div>
+                <div class="hidden md:flex space-x-3 text-sm font-semibold text-gray-300 items-center">
+                    <a href="#ge-e1" class="hover:text-neon-green transition">Etapa 1</a>
+                    <a href="#ge-e2" class="hover:text-neon-green transition">Etapa 2</a>
+                    <a href="#ge-e3" class="hover:text-neon-green transition">Etapa 3</a>
+                    <a href="#ge-e4" class="hover:text-neon-green transition">Etapa 4</a>
+                    <a href="#ge-e5" class="hover:text-neon-green transition">Etapa 5</a>
+                    <a href="#ge-caso" class="px-4 py-1 bg-neon-green/20 border border-neon-green text-neon-green rounded-full hover:bg-neon-green hover:text-black transition">Caso Práctico</a>
+                    <a href="#/evaluacion" class="ml-4 px-4 py-1.5 bg-neon-blue/10 border border-neon-blue text-neon-blue rounded-full hover:bg-neon-blue hover:text-black transition flex items-center gap-2 shadow-[0_0_10px_rgba(0,243,255,0.2)]">
+                        <i class="fa-solid fa-arrow-left"></i> Ir a Evaluación
+                    </a>
+                </div>
+                <a href="#/evaluacion" class="md:hidden px-3 py-1.5 text-xs font-bold bg-neon-blue/10 border border-neon-blue text-neon-blue rounded-full whitespace-nowrap">← Evaluación</a>
+            </div>
+        </nav>
+    <main class="relative z-10 pt-32 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center">
+            <div class="text-center max-w-4xl mx-auto mt-8 mb-20">
+                <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-neon-green/50 bg-neon-green/10 text-neon-green text-xs font-bold tracking-widest uppercase mb-6 shadow-lg">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>SEMANA TP - LICEO INDUSTRIAL DE RENGO</span>
+                </div>
+                <h1 class="font-display text-5xl md:text-7xl font-black mb-6 leading-tight">
+                    Del Papel a la <br>
+                    <span class="text-gradient-green">Ejecución Perfecta</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+                    Ya sabes que tu proyecto es rentable. Ahora, la <strong>Gestión de Proyectos</strong> cambia el enfoque: ya no se trata de sacar cuentas matemáticas, sino de organizar el trabajo, controlar el tiempo y dirigir al equipo para que el producto se termine con éxito.
+                </p>
+                <div class="p-6 rounded-2xl bg-neon-green/10 border border-neon-green/30 max-w-3xl mx-auto text-neon-green text-base md:text-lg font-medium shadow-lg backdrop-blur-md leading-relaxed">
+                    ¿Cómo saber si el proyecto va a tiempo y bien encaminado? ¿Cómo controlar el proyecto para cumplir con lo prometido? A continuación, recorreremos paso a paso las herramientas de gestión para organizar tu talento técnico en un plan de trabajo ordenado, eficiente y exitoso que asegure la entrega perfecta de tus productos en el mercado actual.
+                </div>
+            </div>
+
+            <div class="w-full h-12" id="ge-e1"></div>
+        
+            <section class="w-full mb-24 pt-8">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 rounded-lg bg-neon-green/20 flex items-center justify-center border border-neon-green mr-4 shadow-lg shadow-neon-green/10">
+                        <span class="font-display font-bold text-neon-green text-xl">01</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-neon-green uppercase tracking-widest font-semibold">Unidad 1: Planificación (Parte 1)</span>
+                        <h2 class="font-display text-3xl font-bold">Etapa 1: Inicio y Alcance del Proyecto</h2>
+                    </div>
+                </div>
+                <p class="text-gray-400 mb-8 max-w-3xl leading-relaxed">Es la etapa donde se define la "hoja de ruta" oficial antes de empezar a construir en el taller.</p>
+            
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="glass-panel p-8 rounded-2xl hover-glow transition border-t-2 border-neon-green">
+                        <i class="fa-solid fa-file-signature text-4xl text-neon-green mb-4"></i>
+                        <h3 class="text-xl font-bold mb-3">Acta de Constitución</h3>
+                        <p class="text-sm text-gray-300 mb-4">El documento oficial que autoriza el inicio formal del proyecto. En él se define la autoridad y quién manda: <strong>el director del proyecto</strong>.</p>
+                        <div class="bg-black/40 p-3 rounded-lg border-l-2 border-neon-green text-sm text-gray-400">
+                            Pone a todos de acuerdo sobre los objetivos generales antes de comprar el primer insumo.
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-2xl hover-glow transition border-t-2 border-neon-purple">
+                        <i class="fa-solid fa-ruler-combined text-4xl text-neon-purple mb-4"></i>
+                        <h3 class="text-xl font-bold mb-3">Definición del Alcance</h3>
+                        <p class="text-sm text-gray-300 mb-4">Dejar por escrito qué se va a hacer exactamente <strong>y qué NO se va a hacer</strong>. Esto es vital en cualquier taller o maestranza.</p>
+                        <div class="bg-black/40 p-3 rounded-lg border-l-2 border-neon-purple text-sm text-gray-400">
+                            <strong>¿Por qué?</strong> Para evitar que el cliente pida "cositas extra" gratis a mitad del trabajo (ej: pedir que pinten la reja cuando solo pagó por soldadura).
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-2xl hover-glow transition border-t-2 border-yellow-500">
+                        <i class="fa-solid fa-users-viewfinder text-4xl text-yellow-500 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-3">Identificar Interesados</h3>
+                        <p class="text-sm text-gray-300 mb-4">Mapear a todas las personas afectadas (Stakeholders): clientes, proveedores de acero, o incluso los vecinos afectados por el ruido.</p>
+                        <div class="bg-black/40 p-3 rounded-lg border-l-2 border-yellow-500 text-sm text-gray-400">
+                            <strong>Clave:</strong> Evita que una obra se paralice por no haber coordinado permisos o despachos a tiempo.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ge-e2" class="w-full mb-24 pt-16">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center border border-blue-500 mr-4 shadow-lg shadow-blue-500/10">
+                        <span class="font-display font-bold text-blue-500 text-xl">02</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-blue-500 uppercase tracking-widest font-semibold">Unidad 1: Planificación (Parte 2)</span>
+                        <h2 class="font-display text-3xl font-bold">Etapa 2: Cronograma y Carta Gantt</h2>
+                    </div>
+                </div>
+            
+                <div class="glass-panel p-8 rounded-3xl border-l-4 border-blue-500 hover-glow transition">
+                    <div class="flex flex-col md:flex-row gap-8 items-center">
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-display font-bold mb-4 text-white"><i class="fa-solid fa-calendar-days text-blue-500 mr-2"></i>El Calendario del Proyecto</h3>
+                            <p class="text-sm text-gray-300 mb-4 leading-relaxed">Diseñar el cronograma es ordenar secuencialmente cada tarea por fechas y asignar quién hará cada cosa en el taller.</p>
+                            <ul class="text-sm text-gray-400 space-y-3 list-none">
+                                <li class="flex items-center"><i class="fa-solid fa-check text-blue-400 mr-3"></i> <strong>Semana 1:</strong> Cotizar y comprar fierros, perfiles y motores.</li>
+                                <li class="flex items-center"><i class="fa-solid fa-check text-blue-400 mr-3"></i> <strong>Semana 2:</strong> Corte de metales y soldadura de la estructura base.</li>
+                                <li class="flex items-center"><i class="fa-solid fa-check text-blue-400 mr-3"></i> <strong>Semana 3:</strong> Instalación eléctrica del circuito de automatización.</li>
+                            </ul>
+
+                            <div class="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl">
+                                <p class="text-sm text-blue-300"><i class="fa-solid fa-route mr-2"></i><strong>Concepto Profundo: La Ruta Crítica (CPM)</strong><br>Dentro de tu Gantt, hay tareas que no tienen margen de error. Si la compra del motor se atrasa un día, TODO el proyecto se atrasa un día. Identificar esta "ruta" te dice dónde poner el máximo rigor operativo.</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-5/12 bg-black/50 p-6 rounded-xl border border-blue-500/30 text-center">
+                            <i class="fa-solid fa-chart-gantt text-6xl text-blue-400 mb-4"></i>
+                            <p class="text-xs text-gray-400 uppercase tracking-widest font-bold">Herramienta Clave</p>
+                            <p class="text-lg text-white font-bold mt-1">La Carta Gantt</p>
+                            <p class="text-xs text-gray-500 mt-2">Evita que dos personas intenten hacer el mismo trabajo al mismo tiempo o que el equipo se quede de brazos cruzados esperando materiales.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ge-e3" class="w-full mb-24 pt-16">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-500 mr-4 shadow-lg shadow-orange-500/10">
+                        <span class="font-display font-bold text-orange-500 text-xl">03</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-orange-500 uppercase tracking-widest font-semibold">Unidad 3: Ejecución (Inicio)</span>
+                        <h2 class="font-display text-3xl font-bold">Etapa 3: Ejecución y Dirección del Equipo</h2>
+                    </div>
+                </div>
+                <p class="text-gray-400 mb-8 max-w-3xl leading-relaxed">Poner las manos a la obra. El director del proyecto no solo observa, sino que asegura que su equipo tenga las herramientas necesarias y mantiene la coordinación operativa para que nadie se desvíe del objetivo.</p>
+            
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl border border-orange-500/30 bg-gradient-to-r from-orange-900/20 to-transparent">
+                        <h4 class="text-orange-400 font-bold mb-3 text-lg"><i class="fa-solid fa-users-gear mr-2"></i>Liderazgo y Resolución</h4>
+                        <p class="text-sm text-gray-300">Es el momento donde las habilidades blandas brillan; motivar a los compañeros, resolver conflictos internos y mantener el ritmo de trabajo estipulado en la planificación frente a las presiones del día a día.</p>
+                    </div>
+                
+                    <div class="glass-panel p-6 rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-900/20 to-transparent">
+                        <h4 class="text-emerald-400 font-bold mb-3 text-lg"><i class="fa-solid fa-check-double mr-2"></i>Aseguramiento de Calidad</h4>
+                        <p class="text-sm text-gray-300">No basta con avanzar rápido. Durante la ejecución, se debe verificar constantemente que cada cordón de soldadura, corte o empalme eléctrico cumpla con la norma técnica antes de que sea demasiado tarde para arreglarlo.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ge-e4" class="w-full mb-24 pt-16">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 rounded-lg bg-red-500/20 flex items-center justify-center border border-red-500 mr-4 shadow-lg shadow-red-500/10">
+                        <span class="font-display font-bold text-red-500 text-xl">04</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-red-500 uppercase tracking-widest font-semibold">Unidad 2: Monitoreo</span>
+                        <h2 class="font-display text-3xl font-bold">Etapa 4: Seguimiento y Control</h2>
+                    </div>
+                </div>
+                <p class="text-gray-400 mb-8 max-w-3xl leading-relaxed">Esta unidad nos enseña a vigilar que todo avance de acuerdo con lo planificado mientras los alumnos están trabajando en los talleres.</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="glass-panel p-6 rounded-2xl hover-glow transition">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-3 bg-red-500/20 rounded-lg text-red-400"><i class="fa-solid fa-stopwatch text-xl"></i></div>
+                            <h4 class="font-bold text-xl text-red-400">Tiempo y Costos</h4>
+                        </div>
+                        <p class="text-sm text-gray-300">Revisar constantemente que el equipo no se esté demorando más de la cuenta ni gastando más dinero del presupuesto original para el acero.</p>
+                    </div>
+                
+                    <div class="glass-panel p-6 rounded-2xl hover-glow transition">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-3 bg-yellow-500/20 rounded-lg text-yellow-400"><i class="fa-solid fa-code-branch text-xl"></i></div>
+                            <h4 class="font-bold text-xl text-yellow-400">Gestión de Cambios</h4>
+                        </div>
+                        <p class="text-sm text-gray-300">Saber reaccionar de forma ordenada si surge un imprevisto en la instalación o si el cliente decide cambiar una medida a mitad de camino.</p>
+                    </div>
+
+                    <div class="glass-panel p-6 rounded-2xl hover-glow transition">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-3 bg-purple-500/20 rounded-lg text-purple-400"><i class="fa-solid fa-chart-line text-xl"></i></div>
+                            <h4 class="font-bold text-xl text-purple-400">Uso de KPIs</h4>
+                        </div>
+                        <p class="text-sm text-gray-300">Implementar Indicadores Clave de Rendimiento (KPIs) para medir con datos fríos el avance real frente al planificado. Elimina el clásico "yo creo que vamos bien".</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ge-e5" class="w-full mb-24 pt-16">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 rounded-lg bg-pink-500/20 flex items-center justify-center border border-pink-500 mr-4 shadow-lg shadow-pink-500/10">
+                        <span class="font-display font-bold text-pink-500 text-xl">05</span>
+                    </div>
+                    <div>
+                        <span class="text-xs text-pink-500 uppercase tracking-widest font-semibold">Unidad 3: Finalización</span>
+                        <h2 class="font-display text-3xl font-bold">Etapa 5: Cierre y Lecciones Aprendidas</h2>
+                    </div>
+                </div>
+                <p class="text-gray-400 mb-8 max-w-3xl leading-relaxed">Fase final donde el producto se termina de armar, se prueba en terreno y se hace entrega formal.</p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="glass-panel p-8 rounded-2xl border-t-2 border-pink-500 hover-glow transition">
+                        <h3 class="text-xl font-bold mb-3 text-white"><i class="fa-solid fa-file-contract text-pink-500 mr-2"></i>Cierre Contractual</h3>
+                        <p class="text-sm text-gray-300">Firmar los papeles de conformidad donde el cliente acepta que el circuito o portón quedó en perfectas condiciones y funciona según lo prometido. Es el apretón de manos definitivo.</p>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-2xl border-t-2 border-teal-500 hover-glow transition">
+                        <h3 class="text-xl font-bold mb-3 text-white"><i class="fa-solid fa-brain text-teal-500 mr-2"></i>Lecciones Aprendidas</h3>
+                        <p class="text-sm text-gray-300">Reunir al equipo para anotar qué cosas se hicieron bien y qué errores cometieron (ej: comprar el electrodo equivocado), para no repetirlos jamás en futuros proyectos.</p>
+                    </div>
+
+                    <div class="glass-panel p-8 rounded-2xl border-t-2 border-indigo-500 hover-glow transition">
+                        <h3 class="text-xl font-bold mb-3 text-white"><i class="fa-solid fa-person-chalkboard text-indigo-500 mr-2"></i>Capacitación Final</h3>
+                        <p class="text-sm text-gray-300">Entregar manuales de uso y enseñar al cliente cómo operar el sistema (ej. destrabar el portón sin electricidad). Garantiza la vida útil del producto y evita quejas post-venta.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ge-caso" class="w-full pt-16">
+                <div class="text-center mb-12">
+                    <div class="inline-block px-4 py-1 rounded-full border border-neon-green/50 bg-neon-green/10 text-neon-green text-xs font-bold tracking-widest uppercase mb-4">
+                        Demostración Práctica Estudiantil
+                    </div>
+                    <h2 class="font-display text-4xl font-bold text-white mb-4">Caso Práctico: Control del Portón Corredizo</h2>
+                    <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed">Veamos cómo la <strong>Gestión de Proyectos</strong> salva la situación y cómo el cronograma se adapta radicalmente si trabajas en equipo o si eres un especialista que asume todo por su cuenta.</p>
+                </div>
+
+                <div class="glass-panel rounded-3xl p-1 md:p-2 overflow-hidden border border-blue-500/50 shadow-2xl relative mb-12">
+                    <div class="bg-gray-900/95 rounded-2xl p-6 md:p-8">
+                        <h3 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-users text-blue-500 mr-2"></i>Caso A: Ejecución en Equipo (Taller Multidisciplinario)</h3>
+                        <p class="text-gray-400 text-sm mb-6">El proyecto cuenta con varios técnicos. Se pueden realizar tareas simultáneas (en paralelo), logrando entregar el portón en <strong>4 semanas</strong>.</p>
+                    
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left font-mono text-xs md:text-sm whitespace-nowrap">
+                                <thead>
+                                    <tr class="text-gray-400 border-b border-gray-700">
+                                        <th class="py-3 px-4 font-normal">Tarea / Hito</th>
+                                        <th class="py-3 px-4 font-normal">Responsable</th>
+                                        <th class="py-3 px-4 font-normal text-center">Sem 1</th>
+                                        <th class="py-3 px-4 font-normal text-center">Sem 2</th>
+                                        <th class="py-3 px-4 font-normal text-center">Sem 3</th>
+                                        <th class="py-3 px-4 font-normal text-center">Sem 4</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-white">1. Compras de acero y motor</td>
+                                        <td class="py-3 px-4 text-gray-400">Jefe Taller</td>
+                                        <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-blue-500 rounded"></div></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-white">2. Dimensionado y Soldadura</td>
+                                        <td class="py-3 px-4 text-gray-400">Operario Soldador</td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-blue-500 rounded"></div></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-white">3. Automatización (Circuito)</td>
+                                        <td class="py-3 px-4 text-gray-400">Técnico Eléctrico</td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-yellow-500 rounded indicator-pulse"></div></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-white">4. Pintura e Instalación Terreno</td>
+                                        <td class="py-3 px-4 text-gray-400">Equipo Completo</td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-gray-500 rounded"></div></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-sm text-gray-400 mt-4 border-l-2 border-yellow-500 pl-3"><strong>Análisis:</strong> El trabajo concurrente optimiza el tiempo enormemente, pero requiere una alta gestión de coordinación para evitar que los técnicos choquen físicamente en el taller o dependan uno del otro causando cuellos de botella.</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-3xl p-1 md:p-2 overflow-hidden border border-neon-purple/50 shadow-2xl relative mb-12">
+                    <div class="bg-gray-900/95 rounded-2xl p-6 md:p-8">
+                        <h3 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-user-gear text-neon-purple mr-2"></i>Caso B: Ejecución Individual (Especialista Autónomo)</h3>
+                        <p class="text-gray-400 text-sm mb-6">El proyecto lo asume una sola persona que tiene todos los conocimientos técnicos. Al no poder clonarse, las tareas son estrictamente secuenciales (en cascada), extendiendo el plazo de entrega a <strong>5 semanas</strong>.</p>
+                    
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left font-mono text-xs md:text-sm whitespace-nowrap">
+                                <thead>
+                                    <tr class="text-gray-400 border-b border-gray-700">
+                                        <th class="py-3 px-4 font-normal">Tarea / Hito</th>
+                                        <th class="py-3 px-4 font-normal">Responsable</th>
+                                        <th class="py-3 px-4 font-normal text-center">Sem 1</th>
+                                        <th class="py-3 px-4 font-normal text-center">Sem 2</th>
+                                        <th class="py-3 px-4 font-normal text-center">Sem 3</th>
+                                        <th class="py-3 px-4 font-normal text-center">Sem 4</th>
+                                        <th class="py-3 px-4 font-normal text-center">Sem 5</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-white">1. Compras de acero y motor</td>
+                                        <td class="py-3 px-4 text-neon-purple">Especialista Único</td>
+                                        <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-neon-purple rounded"></div></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-white">2. Dimensionado y Soldadura</td>
+                                        <td class="py-3 px-4 text-neon-purple">Especialista Único</td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-neon-purple rounded"></div></td>
+                                        <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-neon-purple rounded"></div></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-white">3. Automatización (Circuito)</td>
+                                        <td class="py-3 px-4 text-neon-purple">Especialista Único</td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-neon-purple rounded"></div></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                    </tr>
+                                    <tr class="border-b border-gray-800">
+                                        <td class="py-3 px-4 text-white">4. Pintura e Instalación Terreno</td>
+                                        <td class="py-3 px-4 text-neon-purple">Especialista Único</td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"></td>
+                                        <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-neon-purple rounded"></div></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-sm text-gray-400 mt-4 border-l-2 border-neon-purple pl-3"><strong>Análisis:</strong> Al ser un solo responsable, toda la "Ruta Crítica" recae en esta persona. Si bien la organización interna es más sencilla (no hay que coordinar con otros), un solo día de enfermedad o retraso en la soldadura empujará todo el cronograma irremediablemente hacia atrás.</p>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-8 rounded-3xl mt-20 border-2 border-white/10 relative overflow-hidden">
+                    <div class="absolute -right-20 -top-20 w-64 h-64 bg-neon-purple/20 rounded-full blur-3xl"></div>
+                    <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-neon-green/20 rounded-full blur-3xl"></div>
+                
+                    <h3 class="text-3xl font-display font-bold text-center mb-8 relative z-10 text-white">Cartel Comparativo para el Stand</h3>
+                    <p class="text-center text-gray-400 mb-10 max-w-2xl mx-auto relative z-10">Muestra esto a los visitantes para explicarles fácilmente la diferencia de enfoque entre ambas asignaturas clave en la industria.</p>
+                
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                        <div class="bg-blue-900/30 p-8 rounded-2xl border border-neon-blue/40 shadow-[0_0_15px_rgba(0,243,255,0.1)] hover:-translate-y-1 transition duration-300">
+                            <h4 class="text-3xl font-bold text-neon-blue mb-4 font-display"><i class="fa-solid fa-calculator mr-3"></i>Evaluación</h4>
+                            <p class="text-white text-lg mb-3"><strong>Objetivo:</strong> Saber si el proyecto genera dinero 💰</p>
+                            <p class="text-gray-300 text-sm mb-6 leading-relaxed">Se enfoca en los números, la viabilidad comercial y la rentabilidad <strong>antes</strong> de empezar a gastar.</p>
+                            <ul class="text-sm text-gray-400 space-y-2">
+                                <li class="flex items-center"><i class="fa-solid fa-circle-chevron-right text-neon-blue mr-2"></i> Flujo de Caja</li>
+                                <li class="flex items-center"><i class="fa-solid fa-circle-chevron-right text-neon-blue mr-2"></i> VAN y TIR</li>
+                                <li class="flex items-center"><i class="fa-solid fa-circle-chevron-right text-neon-blue mr-2"></i> Matemáticas y Finanzas</li>
+                            </ul>
+                        </div>
+                    
+                        <div class="bg-green-900/30 p-8 rounded-2xl border border-neon-green/40 shadow-[0_0_15px_rgba(0,255,102,0.1)] hover:-translate-y-1 transition duration-300">
+                            <h4 class="text-3xl font-bold text-neon-green mb-4 font-display"><i class="fa-solid fa-calendar-check mr-3"></i>Gestión</h4>
+                            <p class="text-white text-lg mb-3"><strong>Objetivo:</strong> Terminar a tiempo y ordenados 📅</p>
+                            <p class="text-gray-300 text-sm mb-6 leading-relaxed">Se enfoca en organizar los tiempos, el equipo y evitar que el proyecto quede a medias <strong>durante</strong> la ejecución.</p>
+                            <ul class="text-sm text-gray-400 space-y-2">
+                                <li class="flex items-center"><i class="fa-solid fa-circle-chevron-right text-neon-green mr-2"></i> Carta Gantt y Alcance</li>
+                                <li class="flex items-center"><i class="fa-solid fa-circle-chevron-right text-neon-green mr-2"></i> Control de Cambios</li>
+                                <li class="flex items-center"><i class="fa-solid fa-circle-chevron-right text-neon-green mr-2"></i> Liderazgo y Tiempos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="w-full mt-24">
+                <a href="#/evaluacion" class="block glass-panel rounded-3xl p-8 md:p-10 border border-neon-blue/40 hover:border-neon-blue transition group text-center">
+                    <span class="text-xs uppercase tracking-widest text-neon-blue font-bold">Módulo anterior</span>
+                    <h3 class="font-display text-2xl md:text-3xl font-bold text-white mt-3 mb-3">¿Necesitas repasar los números del proyecto?</h3>
+                    <p class="text-gray-400 max-w-2xl mx-auto mb-6 leading-relaxed">Vuelve al módulo de evaluación para revisar el flujo de caja, el VAN, la TIR y el periodo de recuperación de la inversión.</p>
+                    <span class="inline-flex items-center gap-3 px-6 py-3 rounded-full bg-neon-blue/15 border border-neon-blue text-neon-blue font-bold group-hover:bg-neon-blue group-hover:text-black transition">
+                        Volver a Evaluación de Proyectos <i class="fa-solid fa-arrow-right"></i>
+                    </span>
+                </a>
+            </section>
+
+            <footer class="mt-28 mb-8 text-center text-gray-400 text-sm border-t border-gray-800 pt-8 leading-relaxed w-full">
+                Sitio desarrollado por Diego Román Muñoz Ingeniero en Informática &copy; derechos reservados 2026 Chile<br>
+                <span class="text-neon-green font-semibold">Semana TP - Liceo Industrial de Rengo (LIR 2026)</span><br>
+                <span class="text-gray-500 text-xs mt-1 block">Demostrando que la organización y el liderazgo construyen el éxito operativo.</span>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        /* ---------------- Fondo 3D compartido por ambos modulos ---------------- */
+        const scene = new THREE.Scene();
+        // La niebla disuelve el borde lejano de la grilla: sin ella se ve donde "termina" el plano
+        // y el reinicio del bucle quedaria a la vista.
+        scene.fog = new THREE.FogExp2(0x050505, 0.010);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        // Se limita el pixel ratio: en pantallas retina/4K renderizar a resolucion completa bota los FPS
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        /* ---- Grilla con avance infinito ----
+           El relieve se genera en un bloque de TILE_ROWS filas que se repite a lo largo del plano.
+           Asi, al desplazarse exactamente LOOP unidades, cada vertice queda sobre otro de la misma
+           altura: el ciclo se reinicia sin que se note ningun corte. */
+        const SIZE = 520;                     // largo del plano: su borde lejano queda sepultado en la niebla
+        const SEG = 104;                      // segmentos por lado -> celdas de 5 unidades, igual que el diseno original
+        const CELL = SIZE / SEG;              // 5
+        const ROW = SEG + 1;                  // vertices por fila
+        const TILE_ROWS = 8;                  // el patron de alturas se repite cada 8 filas...
+        const LOOP = TILE_ROWS * CELL;        // ...o sea cada 40 unidades
+        const SPEED = 3;                      // unidades por segundo (equivale al 0.05 por frame a 60 Hz)
+
+        const geometry = new THREE.PlaneGeometry(SIZE, SIZE, SEG, SEG);
+        const position = geometry.attributes.position;
+
+        const tile = new Float32Array(ROW * TILE_ROWS);
+        for (let i = 0; i < tile.length; i++) {
+            tile[i] = Math.random() * 3;
+        }
+        for (let iy = 0; iy <= SEG; iy++) {
+            for (let ix = 0; ix <= SEG; ix++) {
+                position.setZ(iy * ROW + ix, tile[(iy % TILE_ROWS) * ROW + ix]);
+            }
+        }
+        position.needsUpdate = true;
+
+        const material = new THREE.MeshBasicMaterial({
+            color: 0xbc13fe,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.15
+        });
+
+        const plane = new THREE.Mesh(geometry, material);
+        plane.rotation.x = -Math.PI / 2;
+        plane.position.y = -10;
+        scene.add(plane);
+
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 500;
+        const posArray = new Float32Array(particlesCount * 3);
+        for (let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 100;
+        }
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.2,
+            color: 0x00f3ff,
+            transparent: true,
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending,
+            fog: false   // las particulas quedan igual que antes, la niebla solo afecta a la grilla
+        });
+
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        camera.position.z = 20;
+        camera.position.y = 5;
+
+        let mouseX = 0, mouseY = 0, targetX = 0, targetY = 0;
+        let windowHalfX = window.innerWidth / 2;
+        let windowHalfY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - windowHalfX);
+            mouseY = (event.clientY - windowHalfY);
+        });
+
+        const clock = new THREE.Clock();
+        let travel = 0;   // distancia recorrida por la grilla, siempre creciente
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Todo se mueve por tiempo real, no por frame: la velocidad es la misma a 60 Hz que a
+            // 144 Hz, y el tope evita el tiron al volver desde otra pestana.
+            const dt = Math.min(clock.getDelta(), 0.05);
+
+            // Suavizado exponencial equivalente al 0.05 por frame original, pero independiente del framerate
+            const ease = 1 - Math.exp(-3 * dt);
+            targetX = mouseX * 0.001;
+            targetY = mouseY * 0.001;
+            camera.rotation.y += ease * (targetX - camera.rotation.y);
+            camera.rotation.x += ease * (targetY - camera.rotation.x);
+
+            // Avance continuo: el modulo devuelve la grilla al inicio del ciclo conservando el
+            // resto exacto, y como el relieve se repite cada LOOP unidades el salto es invisible.
+            travel += SPEED * dt;
+            plane.position.z = travel % LOOP;
+
+            particlesMesh.rotation.y += 0.06 * dt;
+            particlesMesh.rotation.x += 0.03 * dt;
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+        });
+
+        animate();
+
+        /* Cada modulo conserva la paleta de fondo que tenia en su archivo original */
+        const THEMES = {
+            evaluacion: { grid: 0xbc13fe, gridOpacity: 0.15, particles: 0x00f3ff, title: 'Evaluación de Proyectos - LIR 2026' },
+            gestion:    { grid: 0x00ff66, gridOpacity: 0.12, particles: 0xbc13fe, title: 'Gestión de Proyectos - LIR 2026' }
+        };
+
+        /* ---------------- Navegacion entre los dos modulos ---------------- */
+        const views = {
+            evaluacion: document.getElementById('view-evaluacion'),
+            gestion: document.getElementById('view-gestion')
+        };
+        let currentView = 'evaluacion';
+
+        function showView(name, scrollTop) {
+            if (!views[name]) { name = 'evaluacion'; }
+            if (name !== currentView) {
+                Object.keys(views).forEach((key) => { views[key].hidden = (key !== name); });
+                // se reinicia la animacion de entrada
+                views[name].style.animation = 'none';
+                void views[name].offsetWidth;
+                views[name].style.animation = '';
+                currentView = name;
+            }
+            const t = THEMES[name];
+            material.color.setHex(t.grid);
+            material.opacity = t.gridOpacity;
+            particlesMaterial.color.setHex(t.particles);
+            document.title = t.title;
+            if (scrollTop) { window.scrollTo({ top: 0, behavior: 'instant' }); }
+        }
+
+        function handleHash() {
+            const hash = window.location.hash;
+
+            // Ruta de modulo: #/evaluacion  o  #/gestion
+            if (hash.indexOf('#/') === 0) {
+                showView(hash.slice(2), true);
+                return;
+            }
+
+            // Ancla interna (#ev-e3, #ge-caso, ...): se abre el modulo que la contiene
+            if (hash.length > 1) {
+                const target = document.getElementById(hash.slice(1));
+                if (target) {
+                    const owner = target.closest('[data-view]');
+                    if (owner) { showView(owner.dataset.view, false); }
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    return;
+                }
+            }
+
+            showView('evaluacion', false);
+        }
+
+        window.addEventListener('hashchange', handleHash);
+        handleHash();
+
+        /* ---------------- Logo alternante (uno por modulo) ---------------- */
+        const logoUrls = [
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRVEKYQQ5vwZ5vMYTE9YW8s_D5wbwCefzcOJg8ABsXltLy1JUdsefR_u4&s=10",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQJ48Y5OgvTqbO-AAo98gDvSzvowxYp2297P5kVaFUW9w96Nz5L2TyAlO0&s=10"
+        ];
+        let currentLogoIndex = 0;
+        const logoElements = document.querySelectorAll('[data-logo]');
+        if (logoElements.length) {
+            setInterval(() => {
+                logoElements.forEach((el) => { el.style.opacity = '0'; });
+                setTimeout(() => {
+                    currentLogoIndex = (currentLogoIndex + 1) % logoUrls.length;
+                    logoElements.forEach((el) => {
+                        el.src = logoUrls[currentLogoIndex];
+                        el.style.opacity = '1';
+                    });
+                }, 500);
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

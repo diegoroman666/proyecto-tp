@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Proyectos - LIR 2026</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Orbitron', 'sans-serif'],
+                    },
+                    colors: {
+                        neon: {
+                            blue: '#00f3ff',
+                            purple: '#bc13fe',
+                            green: '#00ff66'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            background-color: #050505;
+            color: #ffffff;
+        }
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        .hover-glow:hover {
+            border-color: #00ff66;
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+        .text-gradient-green {
+            background: linear-gradient(to right, #00ff66, #bc13fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        @keyframes pulse-purple {
+            0% { box-shadow: 0 0 0 0 rgba(188, 19, 254, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(188, 19, 254, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(188, 19, 254, 0); }
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-neon-green selection:text-black relative">
+
+    <div id="canvas-container"></div>
+
+    <nav class="fixed w-full z-50 glass-panel border-b-0 py-4 px-6 top-0">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="font-display font-bold text-xl tracking-wider text-white flex items-center">
+                <img id="animated-logo" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRVEKYQQ5vwZ5vMYTE9YW8s_D5wbwCefzcOJg8ABsXltLy1JUdsefR_u4&s=10" alt="LIR Logo" class="w-11 h-11 rounded-full object-cover border-2 border-neon-green mr-3 shadow-md shadow-neon-green/25 transition-opacity duration-500">
+                LIR <span class="text-neon-green ml-1">2026</span>
+            </div>
+            <div class="hidden md:flex space-x-3 text-sm font-semibold text-gray-300 items-center">
+                <a href="#e1" class="hover:text-neon-green transition">Etapa 1</a>
+                <a href="#e2" class="hover:text-neon-green transition">Etapa 2</a>
+                <a href="#e3" class="hover:text-neon-green transition">Etapa 3</a>
+                <a href="#e4" class="hover:text-neon-green transition">Etapa 4</a>
+                <a href="#e5" class="hover:text-neon-green transition">Etapa 5</a>
+                <a href="#caso" class="px-4 py-1 bg-neon-green/20 border border-neon-green text-neon-green rounded-full hover:bg-neon-green hover:text-black transition">Caso Práctico</a>
+                <a href="index.html" class="ml-4 px-4 py-1.5 bg-neon-blue/10 border border-neon-blue text-neon-blue rounded-full hover:bg-neon-blue hover:text-black transition flex items-center gap-2 shadow-[0_0_10px_rgba(0,243,255,0.2)]">
+                    <i class="fa-solid fa-arrow-left"></i> Ir a Evaluación
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative z-10 pt-32 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center">
+        <div class="text-center max-w-4xl mx-auto mt-8 mb-20">
+            <div class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full border border-neon-green/50 bg-neon-green/10 text-neon-green text-xs font-bold tracking-widest uppercase mb-6 shadow-lg">
+                <i class="fa-solid fa-list-check"></i>
+                <span>SEMANA TP - LICEO INDUSTRIAL DE RENGO</span>
+            </div>
+            <h1 class="font-display text-5xl md:text-7xl font-black mb-6 leading-tight">
+                Del Papel a la <br>
+                <span class="text-gradient-green">Ejecución Perfecta</span>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+                Ya sabes que tu proyecto es rentable. Ahora, la <strong>Gestión de Proyectos</strong> cambia el enfoque: ya no se trata de sacar cuentas matemáticas, sino de organizar el trabajo, controlar el tiempo y dirigir al equipo para que el producto se termine con éxito.
+            </p>
+            <div class="p-6 rounded-2xl bg-neon-green/10 border border-neon-green/30 max-w-3xl mx-auto text-neon-green text-base md:text-lg font-medium shadow-lg backdrop-blur-md leading-relaxed">
+                ¿Cómo saber si el proyecto va a tiempo y bien encaminado? ¿Cómo controlar el proyecto para cumplir con lo prometido? A continuación, recorreremos paso a paso las herramientas de gestión para organizar tu talento técnico en un plan de trabajo ordenado, eficiente y exitoso que asegure la entrega perfecta de tus productos en el mercado actual.
+            </div>
+        </div>
+
+        <div class="w-full h-12" id="e1"></div>
+        
+        <section class="w-full mb-24 pt-8">
+            <div class="flex items-center mb-6">
+                <div class="w-12 h-12 rounded-lg bg-neon-green/20 flex items-center justify-center border border-neon-green mr-4 shadow-lg shadow-neon-green/10">
+                    <span class="font-display font-bold text-neon-green text-xl">01</span>
+                </div>
+                <div>
+                    <span class="text-xs text-neon-green uppercase tracking-widest font-semibold">Unidad 1: Planificación (Parte 1)</span>
+                    <h2 class="font-display text-3xl font-bold">Etapa 1: Inicio y Alcance del Proyecto</h2>
+                </div>
+            </div>
+            <p class="text-gray-400 mb-8 max-w-3xl leading-relaxed">Es la etapa donde se define la "hoja de ruta" oficial antes de empezar a construir en el taller.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="glass-panel p-8 rounded-2xl hover-glow transition border-t-2 border-neon-green">
+                    <i class="fa-solid fa-file-signature text-4xl text-neon-green mb-4"></i>
+                    <h3 class="text-xl font-bold mb-3">Acta de Constitución</h3>
+                    <p class="text-sm text-gray-300 mb-4">El documento oficial que autoriza el inicio formal del proyecto. En él se define la autoridad y quién manda: <strong>el director del proyecto</strong>.</p>
+                    <div class="bg-black/40 p-3 rounded-lg border-l-2 border-neon-green text-sm text-gray-400">
+                        Pone a todos de acuerdo sobre los objetivos generales antes de comprar el primer insumo.
+                    </div>
+                </div>
+
+                <div class="glass-panel p-8 rounded-2xl hover-glow transition border-t-2 border-neon-purple">
+                    <i class="fa-solid fa-ruler-combined text-4xl text-neon-purple mb-4"></i>
+                    <h3 class="text-xl font-bold mb-3">Definición del Alcance</h3>
+                    <p class="text-sm text-gray-300 mb-4">Dejar por escrito qué se va a hacer exactamente <strong>y qué NO se va a hacer</strong>. Esto es vital en cualquier taller o maestranza.</p>
+                    <div class="bg-black/40 p-3 rounded-lg border-l-2 border-neon-purple text-sm text-gray-400">
+                        <strong>¿Por qué?</strong> Para evitar que el cliente pida "cositas extra" gratis a mitad del trabajo (ej: pedir que pinten la reja cuando solo pagó por soldadura).
+                    </div>
+                </div>
+
+                <div class="glass-panel p-8 rounded-2xl hover-glow transition border-t-2 border-yellow-500">
+                    <i class="fa-solid fa-users-viewfinder text-4xl text-yellow-500 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-3">Identificar Interesados</h3>
+                    <p class="text-sm text-gray-300 mb-4">Mapear a todas las personas afectadas (Stakeholders): clientes, proveedores de acero, o incluso los vecinos afectados por el ruido.</p>
+                    <div class="bg-black/40 p-3 rounded-lg border-l-2 border-yellow-500 text-sm text-gray-400">
+                        <strong>Clave:</strong> Evita que una obra se paralice por no haber coordinado permisos o despachos a tiempo.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="e2" class="w-full mb-24 pt-16">
+            <div class="flex items-center mb-6">
+                <div class="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center border border-blue-500 mr-4 shadow-lg shadow-blue-500/10">
+                    <span class="font-display font-bold text-blue-500 text-xl">02</span>
+                </div>
+                <div>
+                    <span class="text-xs text-blue-500 uppercase tracking-widest font-semibold">Unidad 1: Planificación (Parte 2)</span>
+                    <h2 class="font-display text-3xl font-bold">Etapa 2: Cronograma y Carta Gantt</h2>
+                </div>
+            </div>
+            
+            <div class="glass-panel p-8 rounded-3xl border-l-4 border-blue-500 hover-glow transition">
+                <div class="flex flex-col md:flex-row gap-8 items-center">
+                    <div class="flex-1">
+                        <h3 class="text-2xl font-display font-bold mb-4 text-white"><i class="fa-solid fa-calendar-days text-blue-500 mr-2"></i>El Calendario del Proyecto</h3>
+                        <p class="text-sm text-gray-300 mb-4 leading-relaxed">Diseñar el cronograma es ordenar secuencialmente cada tarea por fechas y asignar quién hará cada cosa en el taller.</p>
+                        <ul class="text-sm text-gray-400 space-y-3 list-none">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-blue-400 mr-3"></i> <strong>Semana 1:</strong> Cotizar y comprar fierros, perfiles y motores.</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-blue-400 mr-3"></i> <strong>Semana 2:</strong> Corte de metales y soldadura de la estructura base.</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-blue-400 mr-3"></i> <strong>Semana 3:</strong> Instalación eléctrica del circuito de automatización.</li>
+                        </ul>
+
+                        <div class="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl">
+                            <p class="text-sm text-blue-300"><i class="fa-solid fa-route mr-2"></i><strong>Concepto Profundo: La Ruta Crítica (CPM)</strong><br>Dentro de tu Gantt, hay tareas que no tienen margen de error. Si la compra del motor se atrasa un día, TODO el proyecto se atrasa un día. Identificar esta "ruta" te dice dónde poner el máximo rigor operativo.</p>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-5/12 bg-black/50 p-6 rounded-xl border border-blue-500/30 text-center">
+                        <i class="fa-solid fa-chart-gantt text-6xl text-blue-400 mb-4"></i>
+                        <p class="text-xs text-gray-400 uppercase tracking-widest font-bold">Herramienta Clave</p>
+                        <p class="text-lg text-white font-bold mt-1">La Carta Gantt</p>
+                        <p class="text-xs text-gray-500 mt-2">Evita que dos personas intenten hacer el mismo trabajo al mismo tiempo o que el equipo se quede de brazos cruzados esperando materiales.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="e3" class="w-full mb-24 pt-16">
+            <div class="flex items-center mb-6">
+                <div class="w-12 h-12 rounded-lg bg-orange-500/20 flex items-center justify-center border border-orange-500 mr-4 shadow-lg shadow-orange-500/10">
+                    <span class="font-display font-bold text-orange-500 text-xl">03</span>
+                </div>
+                <div>
+                    <span class="text-xs text-orange-500 uppercase tracking-widest font-semibold">Unidad 3: Ejecución (Inicio)</span>
+                    <h2 class="font-display text-3xl font-bold">Etapa 3: Ejecución y Dirección del Equipo</h2>
+                </div>
+            </div>
+            <p class="text-gray-400 mb-8 max-w-3xl leading-relaxed">Poner las manos a la obra. El director del proyecto no solo observa, sino que asegura que su equipo tenga las herramientas necesarias y mantiene la coordinación operativa para que nadie se desvíe del objetivo.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-panel p-6 rounded-2xl border border-orange-500/30 bg-gradient-to-r from-orange-900/20 to-transparent">
+                    <h4 class="text-orange-400 font-bold mb-3 text-lg"><i class="fa-solid fa-users-gear mr-2"></i>Liderazgo y Resolución</h4>
+                    <p class="text-sm text-gray-300">Es el momento donde las habilidades blandas brillan; motivar a los compañeros, resolver conflictos internos y mantener el ritmo de trabajo estipulado en la planificación frente a las presiones del día a día.</p>
+                </div>
+                
+                <div class="glass-panel p-6 rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-900/20 to-transparent">
+                    <h4 class="text-emerald-400 font-bold mb-3 text-lg"><i class="fa-solid fa-check-double mr-2"></i>Aseguramiento de Calidad</h4>
+                    <p class="text-sm text-gray-300">No basta con avanzar rápido. Durante la ejecución, se debe verificar constantemente que cada cordón de soldadura, corte o empalme eléctrico cumpla con la norma técnica antes de que sea demasiado tarde para arreglarlo.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="e4" class="w-full mb-24 pt-16">
+            <div class="flex items-center mb-6">
+                <div class="w-12 h-12 rounded-lg bg-red-500/20 flex items-center justify-center border border-red-500 mr-4 shadow-lg shadow-red-500/10">
+                    <span class="font-display font-bold text-red-500 text-xl">04</span>
+                </div>
+                <div>
+                    <span class="text-xs text-red-500 uppercase tracking-widest font-semibold">Unidad 2: Monitoreo</span>
+                    <h2 class="font-display text-3xl font-bold">Etapa 4: Seguimiento y Control</h2>
+                </div>
+            </div>
+            <p class="text-gray-400 mb-8 max-w-3xl leading-relaxed">Esta unidad nos enseña a vigilar que todo avance de acuerdo con lo planificado mientras los alumnos están trabajando en los talleres.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="glass-panel p-6 rounded-2xl hover-glow transition">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="p-3 bg-red-500/20 rounded-lg text-red-400"><i class="fa-solid fa-stopwatch text-xl"></i></div>
+                        <h4 class="font-bold text-xl text-red-400">Tiempo y Costos</h4>
+                    </div>
+                    <p class="text-sm text-gray-300">Revisar constantemente que el equipo no se esté demorando más de la cuenta ni gastando más dinero del presupuesto original para el acero.</p>
+                </div>
+                
+                <div class="glass-panel p-6 rounded-2xl hover-glow transition">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="p-3 bg-yellow-500/20 rounded-lg text-yellow-400"><i class="fa-solid fa-code-branch text-xl"></i></div>
+                        <h4 class="font-bold text-xl text-yellow-400">Gestión de Cambios</h4>
+                    </div>
+                    <p class="text-sm text-gray-300">Saber reaccionar de forma ordenada si surge un imprevisto en la instalación o si el cliente decide cambiar una medida a mitad de camino.</p>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl hover-glow transition">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="p-3 bg-purple-500/20 rounded-lg text-purple-400"><i class="fa-solid fa-chart-line text-xl"></i></div>
+                        <h4 class="font-bold text-xl text-purple-400">Uso de KPIs</h4>
+                    </div>
+                    <p class="text-sm text-gray-300">Implementar Indicadores Clave de Rendimiento (KPIs) para medir con datos fríos el avance real frente al planificado. Elimina el clásico "yo creo que vamos bien".</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="e5" class="w-full mb-24 pt-16">
+            <div class="flex items-center mb-6">
+                <div class="w-12 h-12 rounded-lg bg-pink-500/20 flex items-center justify-center border border-pink-500 mr-4 shadow-lg shadow-pink-500/10">
+                    <span class="font-display font-bold text-pink-500 text-xl">05</span>
+                </div>
+                <div>
+                    <span class="text-xs text-pink-500 uppercase tracking-widest font-semibold">Unidad 3: Finalización</span>
+                    <h2 class="font-display text-3xl font-bold">Etapa 5: Cierre y Lecciones Aprendidas</h2>
+                </div>
+            </div>
+            <p class="text-gray-400 mb-8 max-w-3xl leading-relaxed">Fase final donde el producto se termina de armar, se prueba en terreno y se hace entrega formal.</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="glass-panel p-8 rounded-2xl border-t-2 border-pink-500 hover-glow transition">
+                    <h3 class="text-xl font-bold mb-3 text-white"><i class="fa-solid fa-file-contract text-pink-500 mr-2"></i>Cierre Contractual</h3>
+                    <p class="text-sm text-gray-300">Firmar los papeles de conformidad donde el cliente acepta que el circuito o portón quedó en perfectas condiciones y funciona según lo prometido. Es el apretón de manos definitivo.</p>
+                </div>
+
+                <div class="glass-panel p-8 rounded-2xl border-t-2 border-teal-500 hover-glow transition">
+                    <h3 class="text-xl font-bold mb-3 text-white"><i class="fa-solid fa-brain text-teal-500 mr-2"></i>Lecciones Aprendidas</h3>
+                    <p class="text-sm text-gray-300">Reunir al equipo para anotar qué cosas se hicieron bien y qué errores cometieron (ej: comprar el electrodo equivocado), para no repetirlos jamás en futuros proyectos.</p>
+                </div>
+
+                <div class="glass-panel p-8 rounded-2xl border-t-2 border-indigo-500 hover-glow transition">
+                    <h3 class="text-xl font-bold mb-3 text-white"><i class="fa-solid fa-person-chalkboard text-indigo-500 mr-2"></i>Capacitación Final</h3>
+                    <p class="text-sm text-gray-300">Entregar manuales de uso y enseñar al cliente cómo operar el sistema (ej. destrabar el portón sin electricidad). Garantiza la vida útil del producto y evita quejas post-venta.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="caso" class="w-full pt-16">
+            <div class="text-center mb-12">
+                <div class="inline-block px-4 py-1 rounded-full border border-neon-green/50 bg-neon-green/10 text-neon-green text-xs font-bold tracking-widest uppercase mb-4">
+                    Demostración Práctica Estudiantil
+                </div>
+                <h2 class="font-display text-4xl font-bold text-white mb-4">Caso Práctico: Control del Portón Corredizo</h2>
+                <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed">Veamos cómo la <strong>Gestión de Proyectos</strong> salva la situación y cómo el cronograma se adapta radicalmente si trabajas en equipo o si eres un especialista que asume todo por su cuenta.</p>
+            </div>
+
+            <div class="glass-panel rounded-3xl p-1 md:p-2 overflow-hidden border border-blue-500/50 shadow-2xl relative mb-12">
+                <div class="bg-gray-900/95 rounded-2xl p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-users text-blue-500 mr-2"></i>Caso A: Ejecución en Equipo (Taller Multidisciplinario)</h3>
+                    <p class="text-gray-400 text-sm mb-6">El proyecto cuenta con varios técnicos. Se pueden realizar tareas simultáneas (en paralelo), logrando entregar el portón en <strong>4 semanas</strong>.</p>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left font-mono text-xs md:text-sm whitespace-nowrap">
+                            <thead>
+                                <tr class="text-gray-400 border-b border-gray-700">
+                                    <th class="py-3 px-4 font-normal">Tarea / Hito</th>
+                                    <th class="py-3 px-4 font-normal">Responsable</th>
+                                    <th class="py-3 px-4 font-normal text-center">Sem 1</th>
+                                    <th class="py-3 px-4 font-normal text-center">Sem 2</th>
+                                    <th class="py-3 px-4 font-normal text-center">Sem 3</th>
+                                    <th class="py-3 px-4 font-normal text-center">Sem 4</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-800">
+                                    <td class="py-3 px-4 text-white">1. Compras de acero y motor</td>
+                                    <td class="py-3 px-4 text-gray-400">Jefe Taller</td>
+                                    <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-blue-500 rounded"></div></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                </tr>
+                                <tr class="border-b border-gray-800">
+                                    <td class="py-3 px-4 text-white">2. Dimensionado y Soldadura</td>
+                                    <td class="py-3 px-4 text-gray-400">Operario Soldador</td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-blue-500 rounded"></div></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                </tr>
+                                <tr class="border-b border-gray-800">
+                                    <td class="py-3 px-4 text-white">3. Automatización (Circuito)</td>
+                                    <td class="py-3 px-4 text-gray-400">Técnico Eléctrico</td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-yellow-500 rounded indicator-pulse"></div></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                </tr>
+                                <tr class="border-b border-gray-800">
+                                    <td class="py-3 px-4 text-white">4. Pintura e Instalación Terreno</td>
+                                    <td class="py-3 px-4 text-gray-400">Equipo Completo</td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-gray-500 rounded"></div></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-4 border-l-2 border-yellow-500 pl-3"><strong>Análisis:</strong> El trabajo concurrente optimiza el tiempo enormemente, pero requiere una alta gestión de coordinación para evitar que los técnicos choquen físicamente en el taller o dependan uno del otro causando cuellos de botella.</p>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-3xl p-1 md:p-2 overflow-hidden border border-neon-purple/50 shadow-2xl relative mb-12">
+                <div class="bg-gray-900/95 rounded-2xl p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-user-gear text-neon-purple mr-2"></i>Caso B: Ejecución Individual (Especialista Autónomo)</h3>
+                    <p class="text-gray-400 text-sm mb-6">El proyecto lo asume una sola persona que tiene todos los conocimientos técnicos. Al no poder clonarse, las tareas son estrictamente secuenciales (en cascada), extendiendo el plazo de entrega a <strong>5 semanas</strong>.</p>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left font-mono text-xs md:text-sm whitespace-nowrap">
+                            <thead>
+                                <tr class="text-gray-400 border-b border-gray-700">
+                                    <th class="py-3 px-4 font-normal">Tarea / Hito</th>
+                                    <th class="py-3 px-4 font-normal">Responsable</th>
+                                    <th class="py-3 px-4 font-normal text-center">Sem 1</th>
+                                    <th class="py-3 px-4 font-normal text-center">Sem 2</th>
+                                    <th class="py-3 px-4 font-normal text-center">Sem 3</th>
+                                    <th class="py-3 px-4 font-normal text-center">Sem 4</th>
+                                    <th class="py-3 px-4 font-normal text-center">Sem 5</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-800">
+                                    <td class="py-3 px-4 text-white">1. Compras de acero y motor</td>
+                                    <td class="py-3 px-4 text-neon-purple">Especialista Único</td>
+                                    <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-neon-purple rounded"></div></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                </tr>
+                                <tr class="border-b border-gray-800">
+                                    <td class="py-3 px-4 text-white">2. Dimensionado y Soldadura</td>
+                                    <td class="py-3 px-4 text-neon-purple">Especialista Único</td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-neon-purple rounded"></div></td>
+                                    <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-neon-purple rounded"></div></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                </tr>
+                                <tr class="border-b border-gray-800">
+                                    <td class="py-3 px-4 text-white">3. Automatización (Circuito)</td>
+                                    <td class="py-3 px-4 text-neon-purple">Especialista Único</td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-neon-purple rounded"></div></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                </tr>
+                                <tr class="border-b border-gray-800">
+                                    <td class="py-3 px-4 text-white">4. Pintura e Instalación Terreno</td>
+                                    <td class="py-3 px-4 text-neon-purple">Especialista Único</td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"></td>
+                                    <td class="py-3 px-4 text-center"><div class="w-full h-2 bg-neon-purple rounded"></div></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-4 border-l-2 border-neon-purple pl-3"><strong>Análisis:</strong> Al ser un solo responsable, toda la "Ruta Crítica" recae en esta persona. Si bien la organización interna es más sencilla (no hay que coordinar con otros), un solo día de enfermedad o retraso en la soldadura empujará todo el cronograma irremediablemente hacia atrás.</p>
+                </div>
+            </div>
+
+            <div class="glass-panel p-8 rounded-3xl mt-20 border-2 border-white/10 relative overflow-hidden">
+                <div class="absolute -right-20 -top-20 w-64 h-64 bg-neon-purple/20 rounded-full blur-3xl"></div>
+                <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-neon-green/20 rounded-full blur-3xl"></div>
+                
+                <h3 class="text-3xl font-display font-bold text-center mb-8 relative z-10 text-white">Cartel Comparativo para el Stand</h3>
+                <p class="text-center text-gray-400 mb-10 max-w-2xl mx-auto relative z-10">Muestra esto a los visitantes para explicarles fácilmente la diferencia de enfoque entre ambas asignaturas clave en la industria.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 relative z-10">
+                    <div class="bg-blue-900/30 p-8 rounded-2xl border border-neon-blue/40 shadow-[0_0_15px_rgba(0,243,255,0.1)] hover:-translate-y-1 transition duration-300">
+                        <h4 class="text-3xl font-bold text-neon-blue mb-4 font-display"><i class="fa-solid fa-calculator mr-3"></i>Evaluación</h4>
+                        <p class="text-white text-lg mb-3"><strong>Objetivo:</strong> Saber si el proyecto genera dinero 💰</p>
+                        <p class="text-gray-300 text-sm mb-6 leading-relaxed">Se enfoca en los números, la viabilidad comercial y la rentabilidad <strong>antes</strong> de empezar a gastar.</p>
+                        <ul class="text-sm text-gray-400 space-y-2">
+                            <li class="flex items-center"><i class="fa-solid fa-circle-chevron-right text-neon-blue mr-2"></i> Flujo de Caja</li>
+                            <li class="flex items-center"><i class="fa-solid fa-circle-chevron-right text-neon-blue mr-2"></i> VAN y TIR</li>
+                            <li class="flex items-center"><i class="fa-solid fa-circle-chevron-right text-neon-blue mr-2"></i> Matemáticas y Finanzas</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-green-900/30 p-8 rounded-2xl border border-neon-green/40 shadow-[0_0_15px_rgba(0,255,102,0.1)] hover:-translate-y-1 transition duration-300">
+                        <h4 class="text-3xl font-bold text-neon-green mb-4 font-display"><i class="fa-solid fa-calendar-check mr-3"></i>Gestión</h4>
+                        <p class="text-white text-lg mb-3"><strong>Objetivo:</strong> Terminar a tiempo y ordenados 📅</p>
+                        <p class="text-gray-300 text-sm mb-6 leading-relaxed">Se enfoca en organizar los tiempos, el equipo y evitar que el proyecto quede a medias <strong>durante</strong> la ejecución.</p>
+                        <ul class="text-sm text-gray-400 space-y-2">
+                            <li class="flex items-center"><i class="fa-solid fa-circle-chevron-right text-neon-green mr-2"></i> Carta Gantt y Alcance</li>
+                            <li class="flex items-center"><i class="fa-solid fa-circle-chevron-right text-neon-green mr-2"></i> Control de Cambios</li>
+                            <li class="flex items-center"><i class="fa-solid fa-circle-chevron-right text-neon-green mr-2"></i> Liderazgo y Tiempos</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="mt-28 mb-8 text-center text-gray-400 text-sm border-t border-gray-800 pt-8 leading-relaxed w-full">
+            Sitio desarrollado por Diego Román Muñoz Ingeniero en Informática &copy; derechos reservados 2026 Chile<br>
+            <span class="text-neon-green font-semibold">Semana TP - Liceo Industrial de Rengo (LIR 2026)</span><br>
+            <span class="text-gray-500 text-xs mt-1 block">Demostrando que la organización y el liderazgo construyen el éxito operativo.</span>
+        </footer>
+    </main>
+
+    <script>
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050505, 0.002);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const geometry = new THREE.PlaneGeometry(200, 200, 40, 40);
+        const position = geometry.attributes.position;
+        for (let i = 0; i < position.count; i++) {
+            const z = Math.random() * 3;
+            position.setZ(i, z);
+        }
+
+        // Green grid for Gestion de Proyectos
+        const material = new THREE.MeshBasicMaterial({ 
+            color: 0x00ff66, 
+            wireframe: true,
+            transparent: true,
+            opacity: 0.12
+        });
+
+        const plane = new THREE.Mesh(geometry, material);
+        plane.rotation.x = -Math.PI / 2;
+        plane.position.y = -10;
+        scene.add(plane);
+
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 500;
+        const posArray = new Float32Array(particlesCount * 3);
+        
+        for(let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 100;
+        }
+        
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        
+        // Purple particles to contrast the green grid
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.2,
+            color: 0xbc13fe,
+            transparent: true,
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending
+        });
+        
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        camera.position.z = 20;
+        camera.position.y = 5;
+
+        let mouseX = 0;
+        let mouseY = 0;
+        let targetX = 0;
+        let targetY = 0;
+
+        const windowHalfX = window.innerWidth / 2;
+        const windowHalfY = window.innerHeight / 2;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX - windowHalfX);
+            mouseY = (event.clientY - windowHalfY);
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            targetX = mouseX * 0.001;
+            targetY = mouseY * 0.001;
+            
+            camera.rotation.y += 0.05 * (targetX - camera.rotation.y);
+            camera.rotation.x += 0.05 * (targetY - camera.rotation.x);
+
+            plane.position.z += 0.05;
+            if (plane.position.z > 5) {
+                plane.position.z = 0;
+            }
+
+            particlesMesh.rotation.y += 0.001;
+            particlesMesh.rotation.x += 0.0005;
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        window.onload = function() {
+            animate();
+        };
+
+        const logoUrls = [
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRVEKYQQ5vwZ5vMYTE9YW8s_D5wbwCefzcOJg8ABsXltLy1JUdsefR_u4&s=10",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRQJ48Y5OgvTqbO-AAo98gDvSzvowxYp2297P5kVaFUW9w96Nz5L2TyAlO0&s=10"
+        ];
+        let currentLogoIndex = 0;
+        const logoElement = document.getElementById('animated-logo');
+        if (logoElement) {
+            setInterval(() => {
+                logoElement.style.opacity = '0';
+                setTimeout(() => {
+                    currentLogoIndex = (currentLogoIndex + 1) % logoUrls.length;
+                    logoElement.src = logoUrls[currentLogoIndex];
+                    logoElement.style.opacity = '1';
+                }, 500);
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

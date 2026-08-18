@@ -1,0 +1,7 @@
+# Configuración local del entorno de desarrollo (servidor de vista previa)
+.claude/
+
+# Sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store
