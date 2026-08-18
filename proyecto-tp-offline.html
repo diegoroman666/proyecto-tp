@@ -204,11 +204,37 @@ Check your Browserslist config to be sure that your targets are set up correctly
         @media (prefers-reduced-motion: reduce) {
             .sim-flash { animation: none; }
         }
-        .sim-preset.activo {
+        .sim-preset.activo,
+        .sim-escenario.activo {
             border-color: #00f3ff;
             color: #00f3ff;
             background: rgba(0, 243, 255, 0.12);
         }
+        /* Casillas editables del flujo de caja: se ven como texto, pero el borde
+           al pasar por encima delata que se pueden escribir. El color de cada
+           cifra lo pone su clase de Tailwind, por eso aqui no se toca. */
+        input.celda-editable {
+            width: 100%;
+            min-width: 112px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 3px 6px;
+            text-align: right;
+            font: inherit;
+            cursor: text;
+        }
+        input.celda-editable:hover {
+            border-color: rgba(255, 255, 255, 0.22);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        input.celda-editable:focus {
+            outline: none;
+            border-color: #00f3ff;
+            background: rgba(0, 243, 255, 0.10);
+        }
+        input.celda-editable::-webkit-outer-spin-button,
+        input.celda-editable::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         /* El campo de unidades usa los botones - / + del propio sitio, no las flechas del navegador */
         .sim-unidades::-webkit-outer-spin-button,
         .sim-unidades::-webkit-inner-spin-button {
@@ -543,12 +569,22 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         Demostración Práctica Estudiantil
                     </div>
                     <h2 class="font-display text-4xl font-bold text-white mb-4">Proyección Financiera a 5 Años: Taller de Portones</h2>
-                    <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed">Para implementar un taller de fabricación metálica e instalación de portones se requiere una inversión inicial de <strong>$5.000.000</strong> en maquinaria y herramientas. Cada portón se vende en <strong class="text-neon-green">$1.000.000</strong> y consume <strong>$500.000</strong> en fierros e insumos.</p>
-                    <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed mt-3">Cambia la cantidad de unidades en la fila <strong class="text-white">Ingresos por Ventas</strong> y las dos tablas se recalculan solas.</p>
+                    <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed">Para implementar un taller de fabricación metálica e instalación de portones se requiere una inversión inicial de <strong>$4.500.000</strong> en maquinaria y herramientas. Cada portón se vende en <strong class="text-neon-green">$1.000.000</strong> y consume <strong>$500.000</strong> en fierros e insumos.</p>
+                    <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed mt-3">
+                        <i class="fa-solid fa-pen-to-square text-neon-blue mr-1"></i>
+                        <strong class="text-white">Todas las casillas son editables, año por año.</strong> Ningún año tiene por qué ser igual al anterior:
+                        puedes subir la producción, aplicar inflación a los costos o dejar el arriendo en cero. Los flujos netos y todos los
+                        indicadores se recalculan solos.
+                    </p>
 
-                    <button type="button" class="sim-ojo mt-6 inline-flex items-center gap-3 px-6 py-3 rounded-full bg-neon-blue/10 border border-neon-blue text-neon-blue font-bold hover:bg-neon-blue hover:text-black transition">
-                        <i class="fa-solid fa-eye"></i><span data-sim="ojoTexto">Ver análisis del escenario</span>
-                    </button>
+                    <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
+                        <button type="button" class="sim-ojo inline-flex items-center gap-3 px-6 py-3 rounded-full bg-neon-blue/10 border border-neon-blue text-neon-blue font-bold hover:bg-neon-blue hover:text-black transition">
+                            <i class="fa-solid fa-eye"></i><span data-sim="ojoTexto">Ver análisis del escenario</span>
+                        </button>
+                        <button type="button" class="sim-reset inline-flex items-center gap-2 px-5 py-3 rounded-full border border-gray-600 text-gray-300 font-bold hover:border-white hover:text-white transition">
+                            <i class="fa-solid fa-rotate-left"></i> Restaurar caso base
+                        </button>
+                    </div>
                 </div>
 
                 <!-- ============ Caso A: Flujo Puro ============ -->
@@ -563,78 +599,79 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                     <tr class="text-gray-400 border-b border-gray-700">
                                         <th class="py-3 px-4 font-normal">Partida del Flujo</th>
                                         <th class="py-3 px-4 font-normal text-right">Año 0</th>
-                                        <th class="py-3 px-4 font-normal text-right">Año 1</th>
-                                        <th class="py-3 px-4 font-normal text-right">Año 2</th>
-                                        <th class="py-3 px-4 font-normal text-right">Año 3</th>
-                                        <th class="py-3 px-4 font-normal text-right">Año 4</th>
-                                        <th class="py-3 px-4 font-normal text-right">Año 5</th>
+                                        <th class="py-3 px-2 font-normal text-right">Año 1</th>
+                                        <th class="py-3 px-2 font-normal text-right">Año 2</th>
+                                        <th class="py-3 px-2 font-normal text-right">Año 3</th>
+                                        <th class="py-3 px-2 font-normal text-right">Año 4</th>
+                                        <th class="py-3 px-2 font-normal text-right">Año 5</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr class="border-b border-gray-800 bg-black/20">
-                                        <td class="py-3 px-4 text-white font-bold">Inversión en Activos (Maquinaria)</td>
-                                        <td class="py-3 px-4 text-right text-red-400 font-bold">-$5.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-4 text-white font-bold">Inversión en Activos (Maquinaria)</td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-red-400 font-bold" data-fila="inversion" data-anio="0" data-signo="-" data-caso="A" value="-$4.500.000" aria-label="Inversión inicial"></td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
                                     </tr>
                                     <tr class="border-b border-gray-800 bg-neon-blue/5">
-                                        <td class="py-3 px-4 text-green-400">
-                                            <div class="flex items-center gap-3">
-                                                <span><i class="fa-solid fa-plus mr-2"></i>Ingresos por Ventas</span>
-                                                <span class="inline-flex items-center rounded-lg border border-neon-blue/60 bg-black/60 overflow-hidden">
+                                        <td class="py-2 px-4">
+                                            <div class="flex items-center gap-3 flex-wrap">
+                                                <span class="text-green-400"><i class="fa-solid fa-plus mr-2"></i>Ingresos por Ventas</span>
+                                                <span class="inline-flex items-center rounded-lg border border-neon-blue/60 bg-black/60 overflow-hidden" title="Aplica la misma cantidad a los cinco años">
                                                     <button type="button" class="sim-menos px-2.5 py-1 text-neon-blue hover:bg-neon-blue/20 transition" aria-label="Quitar una unidad">−</button>
-                                                    <input type="number" class="sim-unidades w-12 bg-transparent text-center text-base font-bold text-neon-blue py-1 focus:outline-none" min="1" max="60" step="1" value="12" aria-label="Unidades vendidas por año">
+                                                    <input type="text" inputmode="numeric" class="sim-unidades w-12 bg-transparent text-center text-base font-bold text-neon-blue py-1 focus:outline-none" value="12" aria-label="Unidades vendidas por año">
                                                     <button type="button" class="sim-mas px-2.5 py-1 text-neon-blue hover:bg-neon-blue/20 transition" aria-label="Agregar una unidad">+</button>
                                                 </span>
                                                 <span class="font-sans text-xs text-gray-400" data-sim="unidadPalabra">unidades al año</span>
+                                                <span class="sim-mixto hidden font-sans text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5">años distintos</span>
                                                 <button type="button" class="sim-ojo text-gray-500 hover:text-neon-blue transition px-1" aria-label="Ver análisis del escenario" title="Ver análisis del escenario"><i class="fa-solid fa-eye"></i></button>
                                             </div>
                                         </td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-green-400" data-fila="ingresos" data-anio="0" data-signo="+" value="+$12.000.000" aria-label="ingresos, año 1"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-green-400" data-fila="ingresos" data-anio="1" data-signo="+" value="+$12.000.000" aria-label="ingresos, año 2"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-green-400" data-fila="ingresos" data-anio="2" data-signo="+" value="+$12.000.000" aria-label="ingresos, año 3"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-green-400" data-fila="ingresos" data-anio="3" data-signo="+" value="+$12.000.000" aria-label="ingresos, año 4"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-green-400" data-fila="ingresos" data-anio="4" data-signo="+" value="+$12.000.000" aria-label="ingresos, año 5"></td>
                                     </tr>
                                     <tr class="border-b border-gray-800">
-                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Operativos (Fierros/Insumos)</td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
+                                        <td class="py-2 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Operativos (Fierros/Insumos)</td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="insumos" data-anio="0" data-signo="-" value="-$6.000.000" aria-label="insumos, año 1"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="insumos" data-anio="1" data-signo="-" value="-$6.000.000" aria-label="insumos, año 2"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="insumos" data-anio="2" data-signo="-" value="-$6.000.000" aria-label="insumos, año 3"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="insumos" data-anio="3" data-signo="-" value="-$6.000.000" aria-label="insumos, año 4"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="insumos" data-anio="4" data-signo="-" value="-$6.000.000" aria-label="insumos, año 5"></td>
                                     </tr>
                                     <tr class="border-b border-gray-800">
-                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Fijos (Arriendo/Luz Taller) <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans">no cambia</span></td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
+                                        <td class="py-2 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Fijos (Arriendo/Luz Taller)  <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans align-middle">costo fijo</span></td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="fijos" data-anio="0" data-signo="-" value="-$2.400.000" aria-label="fijos, año 1"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="fijos" data-anio="1" data-signo="-" value="-$2.400.000" aria-label="fijos, año 2"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="fijos" data-anio="2" data-signo="-" value="-$2.400.000" aria-label="fijos, año 3"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="fijos" data-anio="3" data-signo="-" value="-$2.400.000" aria-label="fijos, año 4"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="fijos" data-anio="4" data-signo="-" value="-$2.400.000" aria-label="fijos, año 5"></td>
                                     </tr>
                                     <tr class="border-b border-gray-800">
-                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Gastos Administrativos y Marketing <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans">no cambia</span></td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
+                                        <td class="py-2 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Gastos Administrativos y Marketing  <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans align-middle">costo fijo</span></td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="admin" data-anio="0" data-signo="-" value="-$1.200.000" aria-label="admin, año 1"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="admin" data-anio="1" data-signo="-" value="-$1.200.000" aria-label="admin, año 2"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="admin" data-anio="2" data-signo="-" value="-$1.200.000" aria-label="admin, año 3"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="admin" data-anio="3" data-signo="-" value="-$1.200.000" aria-label="admin, año 4"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="admin" data-anio="4" data-signo="-" value="-$1.200.000" aria-label="admin, año 5"></td>
                                     </tr>
                                     <tr class="bg-white/5 font-bold text-sm">
-                                        <td class="py-4 px-4 text-white uppercase tracking-wider">Flujo Neto Anual</td>
-                                        <td class="py-4 px-4 text-right text-red-400">-$5.000.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-blue" data-sim="flujoA">+$2.000.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-blue" data-sim="flujoA">+$2.000.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-blue" data-sim="flujoA">+$2.000.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-blue" data-sim="flujoA">+$2.000.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-blue" data-sim="flujoA">+$2.000.000</td>
+                                        <td class="py-3 px-4 text-white uppercase tracking-wider">Flujo Neto Anual</td>
+                                        <td class="py-3 px-4 text-right text-red-400" data-flujo="A" data-anio="-1">-$4.500.000</td>
+                                        <td class="py-3 px-4 text-right text-neon-blue" data-flujo="A" data-anio="0">+$2.400.000</td>
+                                        <td class="py-3 px-4 text-right text-neon-blue" data-flujo="A" data-anio="1">+$2.400.000</td>
+                                        <td class="py-3 px-4 text-right text-neon-blue" data-flujo="A" data-anio="2">+$2.400.000</td>
+                                        <td class="py-3 px-4 text-right text-neon-blue" data-flujo="A" data-anio="3">+$2.400.000</td>
+                                        <td class="py-3 px-4 text-right text-neon-blue" data-flujo="A" data-anio="4">+$2.400.000</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -642,12 +679,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
                             <div class="bg-black/40 p-4 rounded-xl border border-neon-blue/30 text-sm text-gray-300 flex-1">
                                 <p class="font-bold text-neon-blue mb-1"><i class="fa-solid fa-circle-info mr-2"></i>Conclusión del Flujo Puro:</p>
-                                <p>Al no tener deudas bancarias, el 100% de la inversión inicial sale del bolsillo del estudiante ($5.000.000). Fabricando <strong class="text-white" data-sim="unidadesTexto">12</strong> portones al año, el negocio genera un flujo neto de <strong class="text-white" data-sim="flujoATexto">$2.000.000</strong> anuales, de modo que la inversión se recupera en <strong class="text-white" data-sim="priATexto">2,5 años</strong>.</p>
+                                <p data-sim="concA">Al no tener deudas bancarias, el 100% de la inversión sale del bolsillo del estudiante. En los 5 años el taller acumula un flujo neto de <strong class="text-white">$12.000.000</strong> y recupera la inversión de <strong class="text-white">$4.500.000</strong> en <strong class="text-white">1,9 años</strong>.</p>
                             </div>
                             <div class="bg-neon-blue/10 border border-neon-blue p-4 rounded-xl text-right min-w-[220px]">
                                 <span class="text-gray-400 text-xs block uppercase">Periodo Recuperación (PRI)</span>
-                                <span class="text-xl font-bold text-white" data-sim="priA">2,5 Años</span>
-                                <span class="block text-xs font-normal text-gray-400" data-sim="priADetalle">(2 años 6 meses)</span>
+                                <span class="text-xl font-bold text-white" data-sim="priA">1,9 Años</span>
+                                <span class="block text-xs font-normal text-gray-400" data-sim="priADetalle">(1 año 11 meses)</span>
                             </div>
                         </div>
                     </div>
@@ -657,7 +694,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 <div class="glass-panel rounded-3xl p-1 md:p-2 overflow-hidden border border-neon-purple/50 shadow-2xl relative">
                     <div class="bg-gray-900/95 rounded-2xl p-6 md:p-8">
                         <h3 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-building-columns text-neon-purple mr-2"></i>Caso B: Flujo de Caja FINANCIADO (Con Préstamo Bancario)</h3>
-                        <p class="text-gray-400 text-sm mb-6">El estudiante invierte $2.000.000 propios y solicita un crédito comercial por $3.000.000, comprometiendo cuotas anuales de $800.000.</p>
+                        <p class="text-gray-400 text-sm mb-6">El estudiante invierte $2.000.000 propios y solicita un crédito comercial por $2.500.000, comprometiendo cuotas anuales de $800.000. Las filas de operación son las mismas del Caso A: es el mismo taller, cambia sólo cómo se financia.</p>
 
                         <div class="overflow-x-auto">
                             <table class="w-full text-left font-mono text-xs md:text-sm whitespace-nowrap">
@@ -665,87 +702,88 @@ Check your Browserslist config to be sure that your targets are set up correctly
                                     <tr class="text-gray-400 border-b border-gray-700">
                                         <th class="py-3 px-4 font-normal">Partida del Flujo</th>
                                         <th class="py-3 px-4 font-normal text-right">Año 0</th>
-                                        <th class="py-3 px-4 font-normal text-right">Año 1</th>
-                                        <th class="py-3 px-4 font-normal text-right">Año 2</th>
-                                        <th class="py-3 px-4 font-normal text-right">Año 3</th>
-                                        <th class="py-3 px-4 font-normal text-right">Año 4</th>
-                                        <th class="py-3 px-4 font-normal text-right">Año 5</th>
+                                        <th class="py-3 px-2 font-normal text-right">Año 1</th>
+                                        <th class="py-3 px-2 font-normal text-right">Año 2</th>
+                                        <th class="py-3 px-2 font-normal text-right">Año 3</th>
+                                        <th class="py-3 px-2 font-normal text-right">Año 4</th>
+                                        <th class="py-3 px-2 font-normal text-right">Año 5</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr class="border-b border-gray-800 bg-black/20">
-                                        <td class="py-3 px-4 text-white font-bold">Inversión Propia en Activos</td>
-                                        <td class="py-3 px-4 text-right text-red-400 font-bold">-$2.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-4 text-white font-bold">Inversión Propia en Activos</td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-red-400 font-bold" data-fila="inversion" data-anio="0" data-signo="-" data-caso="B" value="-$2.000.000" aria-label="Inversión inicial"></td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
                                     </tr>
                                     <tr class="border-b border-gray-800 bg-neon-purple/5">
-                                        <td class="py-3 px-4 text-green-400">
-                                            <div class="flex items-center gap-3">
-                                                <span><i class="fa-solid fa-plus mr-2"></i>Ingresos por Ventas</span>
-                                                <span class="inline-flex items-center rounded-lg border border-neon-purple/60 bg-black/60 overflow-hidden">
+                                        <td class="py-2 px-4">
+                                            <div class="flex items-center gap-3 flex-wrap">
+                                                <span class="text-green-400"><i class="fa-solid fa-plus mr-2"></i>Ingresos por Ventas</span>
+                                                <span class="inline-flex items-center rounded-lg border border-neon-purple/60 bg-black/60 overflow-hidden" title="Aplica la misma cantidad a los cinco años">
                                                     <button type="button" class="sim-menos px-2.5 py-1 text-neon-purple hover:bg-neon-purple/20 transition" aria-label="Quitar una unidad">−</button>
-                                                    <input type="number" class="sim-unidades w-12 bg-transparent text-center text-base font-bold text-neon-purple py-1 focus:outline-none" min="1" max="60" step="1" value="12" aria-label="Unidades vendidas por año">
+                                                    <input type="text" inputmode="numeric" class="sim-unidades w-12 bg-transparent text-center text-base font-bold text-neon-purple py-1 focus:outline-none" value="12" aria-label="Unidades vendidas por año">
                                                     <button type="button" class="sim-mas px-2.5 py-1 text-neon-purple hover:bg-neon-purple/20 transition" aria-label="Agregar una unidad">+</button>
                                                 </span>
                                                 <span class="font-sans text-xs text-gray-400" data-sim="unidadPalabra">unidades al año</span>
+                                                <span class="sim-mixto hidden font-sans text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5">años distintos</span>
                                                 <button type="button" class="sim-ojo text-gray-500 hover:text-neon-purple transition px-1" aria-label="Ver análisis del escenario" title="Ver análisis del escenario"><i class="fa-solid fa-eye"></i></button>
                                             </div>
                                         </td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-green-400" data-fila="ingresos" data-anio="0" data-signo="+" value="+$12.000.000" aria-label="ingresos, año 1"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-green-400" data-fila="ingresos" data-anio="1" data-signo="+" value="+$12.000.000" aria-label="ingresos, año 2"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-green-400" data-fila="ingresos" data-anio="2" data-signo="+" value="+$12.000.000" aria-label="ingresos, año 3"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-green-400" data-fila="ingresos" data-anio="3" data-signo="+" value="+$12.000.000" aria-label="ingresos, año 4"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-green-400" data-fila="ingresos" data-anio="4" data-signo="+" value="+$12.000.000" aria-label="ingresos, año 5"></td>
                                     </tr>
                                     <tr class="border-b border-gray-800">
-                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Operativos (Fierros/Insumos)</td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
+                                        <td class="py-2 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Operativos (Fierros/Insumos)</td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="insumos" data-anio="0" data-signo="-" value="-$6.000.000" aria-label="insumos, año 1"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="insumos" data-anio="1" data-signo="-" value="-$6.000.000" aria-label="insumos, año 2"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="insumos" data-anio="2" data-signo="-" value="-$6.000.000" aria-label="insumos, año 3"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="insumos" data-anio="3" data-signo="-" value="-$6.000.000" aria-label="insumos, año 4"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="insumos" data-anio="4" data-signo="-" value="-$6.000.000" aria-label="insumos, año 5"></td>
                                     </tr>
                                     <tr class="border-b border-gray-800">
-                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Fijos (Arriendo/Luz Taller) <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans">no cambia</span></td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
+                                        <td class="py-2 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Fijos (Arriendo/Luz Taller)  <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans align-middle">costo fijo</span></td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="fijos" data-anio="0" data-signo="-" value="-$2.400.000" aria-label="fijos, año 1"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="fijos" data-anio="1" data-signo="-" value="-$2.400.000" aria-label="fijos, año 2"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="fijos" data-anio="2" data-signo="-" value="-$2.400.000" aria-label="fijos, año 3"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="fijos" data-anio="3" data-signo="-" value="-$2.400.000" aria-label="fijos, año 4"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="fijos" data-anio="4" data-signo="-" value="-$2.400.000" aria-label="fijos, año 5"></td>
                                     </tr>
                                     <tr class="border-b border-gray-800">
-                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Gastos Administrativos y Marketing <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans">no cambia</span></td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
+                                        <td class="py-2 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Gastos Administrativos y Marketing  <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans align-middle">costo fijo</span></td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="admin" data-anio="0" data-signo="-" value="-$1.200.000" aria-label="admin, año 1"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="admin" data-anio="1" data-signo="-" value="-$1.200.000" aria-label="admin, año 2"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="admin" data-anio="2" data-signo="-" value="-$1.200.000" aria-label="admin, año 3"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="admin" data-anio="3" data-signo="-" value="-$1.200.000" aria-label="admin, año 4"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-gray-400" data-fila="admin" data-anio="4" data-signo="-" value="-$1.200.000" aria-label="admin, año 5"></td>
                                     </tr>
                                     <tr class="border-b border-gray-800 bg-yellow-900/25">
-                                        <td class="py-3 px-4 text-yellow-400"><i class="fa-solid fa-arrow-down mr-2 text-xs"></i>Cuota Préstamo Bancario <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans">no cambia</span></td>
-                                        <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-yellow-400">-$800.000</td>
-                                        <td class="py-3 px-4 text-right text-yellow-400">-$800.000</td>
-                                        <td class="py-3 px-4 text-right text-yellow-400">-$800.000</td>
-                                        <td class="py-3 px-4 text-right text-yellow-400">-$800.000</td>
-                                        <td class="py-3 px-4 text-right text-yellow-400">-$800.000</td>
+                                        <td class="py-2 px-4 text-yellow-400"><i class="fa-solid fa-arrow-down mr-2 text-xs"></i>Cuota Préstamo Bancario  <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans align-middle">cuota fija</span></td>
+                                        <td class="py-2 px-4 text-right text-gray-600">-</td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-yellow-400" data-fila="cuota" data-anio="0" data-signo="-" value="-$800.000" aria-label="cuota, año 1"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-yellow-400" data-fila="cuota" data-anio="1" data-signo="-" value="-$800.000" aria-label="cuota, año 2"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-yellow-400" data-fila="cuota" data-anio="2" data-signo="-" value="-$800.000" aria-label="cuota, año 3"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-yellow-400" data-fila="cuota" data-anio="3" data-signo="-" value="-$800.000" aria-label="cuota, año 4"></td>
+                                        <td class="py-2 px-2 text-right"><input type="text" inputmode="numeric" class="celda-editable text-yellow-400" data-fila="cuota" data-anio="4" data-signo="-" value="-$800.000" aria-label="cuota, año 5"></td>
                                     </tr>
                                     <tr class="bg-white/5 font-bold text-sm">
-                                        <td class="py-4 px-4 text-white uppercase tracking-wider">Flujo Neto para el Estudiante</td>
-                                        <td class="py-4 px-4 text-right text-red-400">-$2.000.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-purple" data-sim="flujoB">+$1.200.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-purple" data-sim="flujoB">+$1.200.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-purple" data-sim="flujoB">+$1.200.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-purple" data-sim="flujoB">+$1.200.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-purple" data-sim="flujoB">+$1.200.000</td>
+                                        <td class="py-3 px-4 text-white uppercase tracking-wider">Flujo Neto para el Estudiante</td>
+                                        <td class="py-3 px-4 text-right text-red-400" data-flujo="B" data-anio="-1">-$2.000.000</td>
+                                        <td class="py-3 px-4 text-right text-neon-purple" data-flujo="B" data-anio="0">+$1.600.000</td>
+                                        <td class="py-3 px-4 text-right text-neon-purple" data-flujo="B" data-anio="1">+$1.600.000</td>
+                                        <td class="py-3 px-4 text-right text-neon-purple" data-flujo="B" data-anio="2">+$1.600.000</td>
+                                        <td class="py-3 px-4 text-right text-neon-purple" data-flujo="B" data-anio="3">+$1.600.000</td>
+                                        <td class="py-3 px-4 text-right text-neon-purple" data-flujo="B" data-anio="4">+$1.600.000</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -753,12 +791,12 @@ Check your Browserslist config to be sure that your targets are set up correctly
                         <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
                             <div class="bg-black/40 p-4 rounded-xl border border-neon-purple/30 text-sm text-gray-300 flex-1">
                                 <p class="font-bold text-neon-purple mb-1"><i class="fa-solid fa-circle-info mr-2"></i>Conclusión del Flujo Financiado (Apalancamiento):</p>
-                                <p>Mediante el uso inteligente de un crédito de $3.000.000, el estudiante reduce su exposición de riesgo arriesgando sólo $2.000.000 propios. Descontada la cuota anual del préstamo ($800.000), con <strong class="text-white" data-sim="unidadesTexto">12</strong> portones al año le quedan <strong class="text-white" data-sim="flujoBTexto">$1.200.000</strong> anuales y recupera lo suyo en <strong class="text-white" data-sim="priBTexto">1,7 años</strong>.</p>
+                                <p data-sim="concB">Con el crédito, el estudiante arriesga sólo <strong class="text-white">$2.000.000</strong> propios. Descontadas las cuotas, acumula <strong class="text-white">$8.000.000</strong> en 5 años y recupera lo suyo en <strong class="text-white">1,3 años</strong>.</p>
                             </div>
                             <div class="bg-neon-purple/10 border border-neon-purple p-4 rounded-xl text-right min-w-[220px]">
                                 <span class="text-gray-400 text-xs block uppercase">Periodo Recuperación (PRI)</span>
-                                <span class="text-xl font-bold text-white" data-sim="priB">1,7 Años</span>
-                                <span class="block text-xs font-normal text-gray-400" data-sim="priBDetalle">(1 año 8 meses)</span>
+                                <span class="text-xl font-bold text-white" data-sim="priB">1,3 Años</span>
+                                <span class="block text-xs font-normal text-gray-400" data-sim="priBDetalle">(1 año 3 meses)</span>
                             </div>
                         </div>
                     </div>
@@ -1198,35 +1236,17 @@ Check your Browserslist config to be sure that your targets are set up correctly
             </div>
 
             <div class="p-6 space-y-5">
-                <!-- Atajos -->
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-xs text-gray-500 uppercase tracking-widest font-bold mr-1">Prueba con:</span>
-                    <button type="button" data-preset="6"  class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">6 al año</button>
-                    <button type="button" data-preset="12" class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">1 al mes (12)</button>
-                    <button type="button" data-preset="24" class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">2 al mes (24)</button>
-                    <button type="button" data-preset="48" class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">1 por semana (48)</button>
-                </div>
-
-                <!-- Cifras del escenario -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-black/40 rounded-xl border border-gray-800 px-4 py-3">
-                        <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Ventas al año</span>
-                        <span class="font-mono text-lg font-bold text-green-400" data-sim="ingresosResumen">$12.000.000</span>
+                <!-- Escenarios de ejemplo: cada uno ilustra un factor distinto -->
+                <div>
+                    <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-2">Escenarios para mostrar en clase</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" data-escenario="base" class="sim-escenario px-3 py-1.5 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">Caso base</button>
+                        <button type="button" data-escenario="creciente" class="sim-escenario px-3 py-1.5 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">Producción creciente</button>
+                        <button type="button" data-escenario="inflacion" class="sim-escenario px-3 py-1.5 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">Inflación 5% en costos</button>
+                        <button type="button" data-escenario="sinArriendo" class="sim-escenario px-3 py-1.5 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">Taller en casa (sin arriendo)</button>
+                        <button type="button" data-escenario="malo" class="sim-escenario px-3 py-1.5 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">Un año malo</button>
                     </div>
-                    <div class="bg-black/40 rounded-xl border border-gray-800 px-4 py-3">
-                        <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Punto de equilibrio</span>
-                        <span class="font-mono text-lg font-bold text-yellow-400"><span data-sim="equilibrio">8</span> al año</span>
-                    </div>
-                    <div class="bg-black/40 rounded-xl border border-neon-blue/30 px-4 py-3">
-                        <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Flujo neto (Puro)</span>
-                        <span class="font-mono text-lg font-bold text-neon-blue" data-sim="flujoAResumen">$2.000.000</span>
-                        <span class="block text-[11px] text-gray-500 mt-0.5">Recupera en <span data-sim="priATexto">2,5 años</span></span>
-                    </div>
-                    <div class="bg-black/40 rounded-xl border border-neon-purple/30 px-4 py-3">
-                        <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Flujo neto (Financiado)</span>
-                        <span class="font-mono text-lg font-bold text-neon-purple" data-sim="flujoBResumen">$1.200.000</span>
-                        <span class="block text-[11px] text-gray-500 mt-0.5">Recupera en <span data-sim="priBTexto">1,7 años</span></span>
-                    </div>
+                    <p class="text-xs text-gray-500 mt-2" data-sim="escenarioNota">El ejercicio original: 12 portones al año, todos los años iguales.</p>
                 </div>
 
                 <!-- Explicación del escenario -->
@@ -1234,16 +1254,63 @@ Check your Browserslist config to be sure that your targets are set up correctly
                     <span data-sim="mensaje">Este es el caso base del ejercicio: 12 portones al año, uno por mes.</span>
                 </div>
 
-                <!-- Como se arma el calculo -->
-                <div class="bg-black/30 rounded-xl border border-gray-800 p-4">
-                    <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-3">De dónde salen los números</p>
-                    <div class="space-y-2 text-sm text-gray-400">
-                        <div class="flex justify-between gap-4"><span>Precio de venta de cada portón</span><span class="font-mono text-green-400">+$1.000.000</span></div>
-                        <div class="flex justify-between gap-4"><span>Fierros e insumos de cada portón</span><span class="font-mono text-gray-300">-$500.000</span></div>
-                        <div class="flex justify-between gap-4 border-t border-gray-700 pt-2 text-white"><span class="font-bold">Te queda por portón</span><span class="font-mono font-bold text-neon-blue">+$500.000</span></div>
-                        <div class="flex justify-between gap-4 pt-2"><span>Arriendo, luz, administración y marketing <span class="text-yellow-500 text-xs">(no cambian)</span></span><span class="font-mono text-yellow-400">-$4.000.000</span></div>
+                <!-- Indicadores de los dos casos -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="bg-black/40 rounded-2xl border border-neon-blue/30 p-4">
+                        <p class="text-xs font-bold text-neon-blue uppercase tracking-widest mb-3"><i class="fa-solid fa-wallet mr-1"></i> Caso A · Flujo Puro</p>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between gap-3"><span class="text-gray-400">Inversión</span><span class="font-mono text-red-400" data-sim="invA">-$4.500.000</span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-400">Flujo acumulado 5 años</span><span class="font-mono text-neon-blue font-bold" data-sim="totalA">+$12.000.000</span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-400">PRI</span><span class="font-mono text-white" data-sim="priATexto">1,9 años</span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-400">VAN (10%)</span><span class="font-mono font-bold" data-sim="vanA">+$4.597.888</span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-400">TIR</span><span class="font-mono text-white" data-sim="tirA">45,0%</span></div>
+                        </div>
+                        <p class="text-xs mt-3 pt-3 border-t border-gray-800 leading-relaxed" data-sim="veredictoA">VAN positivo: el proyecto genera valor por sobre el 10% exigido.</p>
                     </div>
-                    <p class="text-xs text-gray-500 leading-relaxed mt-3">Como los costos fijos son los mismos fabriques pocas o muchas unidades, cada portón extra deja casi entera su ganancia. Por eso el flujo neto sube mucho más rápido que las ventas.</p>
+
+                    <div class="bg-black/40 rounded-2xl border border-neon-purple/30 p-4">
+                        <p class="text-xs font-bold text-neon-purple uppercase tracking-widest mb-3"><i class="fa-solid fa-building-columns mr-1"></i> Caso B · Financiado</p>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between gap-3"><span class="text-gray-400">Inversión propia</span><span class="font-mono text-red-400" data-sim="invB">-$2.000.000</span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-400">Flujo acumulado 5 años</span><span class="font-mono text-neon-purple font-bold" data-sim="totalB">+$8.000.000</span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-400">PRI</span><span class="font-mono text-white" data-sim="priBTexto">1,3 años</span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-400">VAN (10%)</span><span class="font-mono font-bold" data-sim="vanB">+$4.065.259</span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-400">TIR</span><span class="font-mono text-white" data-sim="tirB">75,3%</span></div>
+                        </div>
+                        <p class="text-xs mt-3 pt-3 border-t border-gray-800 leading-relaxed" data-sim="veredictoB">VAN positivo: el proyecto genera valor por sobre el 10% exigido.</p>
+                    </div>
+                </div>
+
+                <!-- Recorrido año por año: se ve en cuál se recupera la inversión -->
+                <div class="bg-black/30 rounded-xl border border-gray-800 p-4">
+                    <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-3">Año por año: cuándo se recupera la inversión</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs font-mono">
+                            <thead>
+                                <tr class="text-gray-500 border-b border-gray-800">
+                                    <th class="text-left font-normal py-1.5 pr-3">Año</th>
+                                    <th class="text-right font-normal py-1.5 px-2">Flujo Puro</th>
+                                    <th class="text-right font-normal py-1.5 px-2">Acumulado</th>
+                                    <th class="text-right font-normal py-1.5 px-2">Flujo Financ.</th>
+                                    <th class="text-right font-normal py-1.5 pl-2">Acumulado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sim-recorrido"></tbody>
+                        </table>
+                    </div>
+                    <p class="text-[11px] text-gray-500 mt-2">La fila se marca en verde el año en que el acumulado supera la inversión.</p>
+                </div>
+
+                <!-- Referencia del modelo -->
+                <div class="bg-black/30 rounded-xl border border-gray-800 p-4">
+                    <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-3">Ventas y costos del escenario</p>
+                    <div class="space-y-2 text-sm text-gray-400">
+                        <div class="flex justify-between gap-4"><span>Ventas de los 5 años</span><span class="font-mono text-green-400" data-sim="ventasTotales">+$60.000.000</span></div>
+                        <div class="flex justify-between gap-4"><span>Fierros e insumos</span><span class="font-mono text-gray-300" data-sim="insumosTotales">-$30.000.000</span></div>
+                        <div class="flex justify-between gap-4"><span>Costos fijos y gastos <span class="text-yellow-500 text-xs">(no dependen de cuánto produzcas)</span></span><span class="font-mono text-yellow-400" data-sim="fijosTotales">-$18.000.000</span></div>
+                        <div class="flex justify-between gap-4"><span>Cuotas del préstamo <span class="text-xs">(sólo Caso B)</span></span><span class="font-mono text-yellow-400" data-sim="cuotasTotales">-$4.000.000</span></div>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed mt-3">Cada portón se vende en $1.000.000 y gasta $500.000 en insumos, así que deja $500.000 para cubrir los costos fijos. Como esos costos son los mismos fabriques pocas o muchas unidades, cada portón extra deja casi entera su ganancia.</p>
                 </div>
             </div>
         </div>
@@ -1429,32 +1496,98 @@ Check your Browserslist config to be sure that your targets are set up correctly
         window.addEventListener('hashchange', handleHash);
         handleHash();
 
-        /* ---------------- Simulador del caso practico ----------------
-           Modelo del ejercicio: cada porton se vende en $1.000.000 y consume $500.000 en
-           fierros e insumos, de modo que aporta $500.000 para cubrir los costos fijos.
-           El arriendo, la luz, el marketing y la cuota del prestamo NO dependen de cuanto
-           se fabrique: por eso, al producir mas, la ganancia crece mucho mas rapido que
-           las ventas. Esa es la leccion que el simulador deja ver. */
+        /* ================= Simulador del caso practico =================
+           Cada casilla de cada ano es editable. El escenario vive en un unico
+           objeto; al tocar cualquier campo se recalcula todo desde cero, de modo
+           que los flujos, el PRI, el VAN, la TIR y las conclusiones del modal
+           siempre corresponden a los numeros que estan a la vista.
+
+           Las filas de operacion (ingresos, insumos, costos fijos, gastos) son
+           las mismas en los dos casos: es el mismo taller, y lo unico que cambia
+           entre el Caso A y el Caso B es como se financia. Por eso ambas tablas
+           comparten esos valores y solo difieren en la inversion y en la cuota. */
         const SIM = {
-            precio: 1000000,          // precio de venta de un porton
-            insumos: 500000,          // fierros e insumos que consume cada porton
-            costosFijos: 2500000,     // arriendo y luz del taller
-            gastosAdmin: 1500000,     // administracion y marketing
-            inversionTotal: 5000000,  // maquinaria y herramientas (Caso A)
-            inversionPropia: 2000000, // capital propio arriesgado (Caso B)
-            cuotaPrestamo: 800000,    // cuota anual del credito (Caso B)
-            base: 12,                 // el caso base del ejercicio: uno por mes
-            min: 1,
-            max: 60
+            anios: 5,
+            precio: 1000000,      // precio de venta de un porton
+            insumoUnit: 500000,   // fierros e insumos que consume cada porton
+            tasa: 0.10,           // tasa de descuento exigida para el VAN
+            minU: 1,
+            maxU: 60,
+            tope: 999999999       // tope por casilla, para que la tabla no se deforme
         };
 
-        const simCampos = Array.from(document.querySelectorAll('.sim-unidades'));
+        const simCampos = Array.from(document.querySelectorAll('.celda-editable'));
 
         if (simCampos.length) {
+
+            /* ---------- Escenarios de ejemplo ---------- */
+            const repetir = (v) => Array(SIM.anios).fill(v);
+
+            function porUnidades(esc, unidades) {
+                for (let t = 0; t < SIM.anios; t++) {
+                    esc.ingresos[t] = unidades[t] * SIM.precio;
+                    esc.insumos[t] = unidades[t] * SIM.insumoUnit;
+                }
+                return esc;
+            }
+
+            function escenarioBase() {
+                return {
+                    ingresos: repetir(12 * SIM.precio),
+                    insumos: repetir(12 * SIM.insumoUnit),
+                    fijos: repetir(2400000),
+                    admin: repetir(1200000),
+                    cuota: repetir(800000),
+                    invA: 4500000,
+                    invB: 2000000
+                };
+            }
+
+            const ESCENARIOS = {
+                base: {
+                    nota: 'El ejercicio original: 12 portones al año, todos los años iguales.',
+                    arma: escenarioBase
+                },
+                creciente: {
+                    nota: 'El taller parte despacio y va tomando ritmo: 8, 12, 16, 20 y 24 portones. Así suele crecer un negocio real.',
+                    arma: () => porUnidades(escenarioBase(), [8, 12, 16, 20, 24])
+                },
+                inflacion: {
+                    nota: 'Los costos suben 5% cada año pero el precio de venta se mantiene: el margen se va apretando solo.',
+                    arma: () => {
+                        const e = escenarioBase();
+                        for (let t = 0; t < SIM.anios; t++) {
+                            const f = Math.pow(1.05, t);
+                            e.insumos[t] = Math.round(e.insumos[t] * f);
+                            e.fijos[t] = Math.round(e.fijos[t] * f);
+                            e.admin[t] = Math.round(e.admin[t] * f);
+                        }
+                        return e;
+                    }
+                },
+                sinArriendo: {
+                    nota: 'El taller funciona en casa: no hay arriendo ni cuentas del local. Se ve cuánto pesaba ese costo fijo.',
+                    arma: () => { const e = escenarioBase(); e.fijos = repetir(0); return e; }
+                },
+                malo: {
+                    nota: 'El año 3 se cae la demanda y sólo se venden 4 portones, pero los costos fijos hay que pagarlos igual.',
+                    arma: () => porUnidades(escenarioBase(), [12, 12, 4, 12, 12])
+                }
+            };
+
+            let esc = escenarioBase();
+            let escenarioActual = 'base';
+
+            /* ---------- Formato de cifras ---------- */
             const pesos = (n) => '$' + Math.round(Math.abs(n)).toLocaleString('es-CL');
             const conSigno = (n) => (Math.round(n) === 0 ? '' : (n < 0 ? '-' : '+')) + pesos(n);
             const decimal = (n) => n.toFixed(1).replace('.', ',');
             const veces = (n) => (Math.abs(n - Math.round(n)) < 0.05 ? String(Math.round(n)) : decimal(n));
+            const porcentaje = (n) => (n * 100).toFixed(1).replace('.', ',') + '%';
+            const soloDigitos = (txt) => {
+                const d = String(txt).replace(/[^\d]/g, '');
+                return d === '' ? 0 : Math.min(SIM.tope, parseInt(d, 10));
+            };
 
             function enMeses(anios) {
                 const total = Math.round(anios * 12);
@@ -1465,18 +1598,66 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 return partes.length ? partes.join(' ') : 'menos de un mes';
             }
 
-            function textoRitmo(u) {
-                if (u === 1) { return '1 portón al año'; }
-                const porMes = u / 12;
-                if (Number.isInteger(porMes)) {
-                    return porMes === 1 ? '1 portón al mes' : porMes + ' portones al mes';
+            /* ---------- Indicadores ----------
+               Con flujos distintos cada ano ya no sirve dividir inversion entre flujo:
+               el PRI se obtiene acumulando ano a ano e interpolando dentro del ano en
+               que el acumulado alcanza la inversion. */
+            function calcularPRI(inversion, flujos) {
+                let acum = 0;
+                for (let t = 0; t < flujos.length; t++) {
+                    const antes = acum;
+                    acum += flujos[t];
+                    if (acum >= inversion && flujos[t] > 0) {
+                        return t + (inversion - antes) / flujos[t];
+                    }
                 }
-                // Bajo uno por mes se lee mejor al reves: uno cada tantos meses
-                if (porMes < 1) { return '1 portón cada ' + decimal(12 / u) + ' meses'; }
-                return 'aprox. ' + decimal(porMes) + ' portones al mes';
+                return null;   // no se recupera dentro de los 5 anos
             }
 
-            // Escribe el valor y lo hace destellar solo si de verdad cambio
+            function calcularVAN(inversion, flujos, tasa) {
+                let v = -inversion;
+                for (let t = 0; t < flujos.length; t++) {
+                    v += flujos[t] / Math.pow(1 + tasa, t + 1);
+                }
+                return v;
+            }
+
+            // La TIR es la tasa que deja el VAN en cero. Se busca por biseccion, que
+            // converge siempre que haya un cambio de signo en el intervalo.
+            function calcularTIR(inversion, flujos) {
+                const f = (i) => calcularVAN(inversion, flujos, i);
+                let lo = -0.95, hi = 10;
+                let flo = f(lo), fhi = f(hi);
+                if (!isFinite(flo) || !isFinite(fhi) || flo * fhi > 0) { return null; }
+                for (let k = 0; k < 200; k++) {
+                    const mid = (lo + hi) / 2;
+                    const fm = f(mid);
+                    if (!isFinite(fm)) { return null; }
+                    if (flo * fm <= 0) { hi = mid; fhi = fm; } else { lo = mid; flo = fm; }
+                }
+                return (lo + hi) / 2;
+            }
+
+            function calcular() {
+                const flujoA = [], flujoB = [];
+                for (let t = 0; t < SIM.anios; t++) {
+                    const neto = esc.ingresos[t] - esc.insumos[t] - esc.fijos[t] - esc.admin[t];
+                    flujoA.push(neto);
+                    flujoB.push(neto - esc.cuota[t]);
+                }
+                const suma = (a) => a.reduce((x, y) => x + y, 0);
+                return {
+                    flujoA, flujoB,
+                    totalA: suma(flujoA), totalB: suma(flujoB),
+                    ventas: suma(esc.ingresos), insumos: suma(esc.insumos),
+                    fijos: suma(esc.fijos) + suma(esc.admin), cuotas: suma(esc.cuota),
+                    priA: calcularPRI(esc.invA, flujoA), priB: calcularPRI(esc.invB, flujoB),
+                    vanA: calcularVAN(esc.invA, flujoA, SIM.tasa), vanB: calcularVAN(esc.invB, flujoB, SIM.tasa),
+                    tirA: calcularTIR(esc.invA, flujoA), tirB: calcularTIR(esc.invB, flujoB)
+                };
+            }
+
+            /* ---------- Escritura en pantalla ---------- */
             function escribir(clave, texto) {
                 document.querySelectorAll('[data-sim="' + clave + '"]').forEach((el) => {
                     if (el.textContent === texto) { return; }
@@ -1487,128 +1668,336 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 });
             }
 
-            function pintar(clave, positivo, colorOk) {
+            function escribirHTML(clave, html) {
                 document.querySelectorAll('[data-sim="' + clave + '"]').forEach((el) => {
-                    el.classList.toggle(colorOk, positivo);
-                    el.classList.toggle('text-red-400', !positivo);
+                    if (el.innerHTML === html) { return; }
+                    el.innerHTML = html;
                 });
             }
 
-            const margen = SIM.precio - SIM.insumos;
-            const fijos = SIM.costosFijos + SIM.gastosAdmin;
-            const equilibrioA = Math.ceil(fijos / margen);
-            const flujoBase = SIM.base * margen - fijos;
+            function valorDe(fila, anio, caso) {
+                if (fila === 'inversion') { return caso === 'B' ? esc.invB : esc.invA; }
+                return esc[fila][anio];
+            }
+
+            function fijarValor(fila, anio, caso, v) {
+                if (fila === 'inversion') {
+                    if (caso === 'B') { esc.invB = v; } else { esc.invA = v; }
+                } else {
+                    esc[fila][anio] = v;
+                }
+            }
+
+            function pintarCeldas() {
+                simCampos.forEach((inp) => {
+                    // no se reescribe la casilla que el usuario tiene abierta: le moveria el cursor
+                    if (inp === document.activeElement) { return; }
+                    const txt = conSigno(valorDe(inp.dataset.fila, Number(inp.dataset.anio), inp.dataset.caso) * (inp.dataset.signo === '-' ? -1 : 1));
+                    if (inp.value !== txt) { inp.value = txt; }
+                });
+            }
+
+            function pintarFlujos(r) {
+                document.querySelectorAll('[data-flujo]').forEach((el) => {
+                    const anio = Number(el.dataset.anio);
+                    const caso = el.dataset.flujo;
+                    let v;
+                    if (anio < 0) {
+                        v = -(caso === 'B' ? esc.invB : esc.invA);
+                    } else {
+                        v = (caso === 'B' ? r.flujoB : r.flujoA)[anio];
+                    }
+                    const txt = conSigno(v);
+                    if (el.textContent !== txt) {
+                        el.textContent = txt;
+                        el.classList.remove('sim-flash');
+                        void el.offsetWidth;
+                        el.classList.add('sim-flash');
+                    }
+                    const color = caso === 'B' ? 'text-neon-purple' : 'text-neon-blue';
+                    el.classList.toggle(color, v >= 0);
+                    el.classList.toggle('text-red-400', v < 0);
+                });
+            }
+
+            /* ---------- Recorrido ano a ano dentro del modal ---------- */
+            function pintarRecorrido(r) {
+                const cuerpo = document.getElementById('sim-recorrido');
+                if (!cuerpo) { return; }
+                let accA = 0, accB = 0, marcadoA = false, marcadoB = false;
+                let html = '';
+                for (let t = 0; t < SIM.anios; t++) {
+                    accA += r.flujoA[t];
+                    accB += r.flujoB[t];
+                    const cubreA = !marcadoA && accA >= esc.invA;
+                    const cubreB = !marcadoB && accB >= esc.invB;
+                    if (cubreA) { marcadoA = true; }
+                    if (cubreB) { marcadoB = true; }
+                    const resalte = (cubreA || cubreB) ? ' bg-neon-green/10' : '';
+                    html += '<tr class="border-b border-gray-800/60' + resalte + '">'
+                          + '<td class="py-1.5 pr-3 text-gray-400">Año ' + (t + 1)
+                          + (cubreA ? ' <span class="text-neon-green" title="El Caso A recupera la inversión">A✓</span>' : '')
+                          + (cubreB ? ' <span class="text-neon-green" title="El Caso B recupera la inversión">B✓</span>' : '')
+                          + '</td>'
+                          + '<td class="py-1.5 px-2 text-right ' + (r.flujoA[t] < 0 ? 'text-red-400' : 'text-neon-blue') + '">' + conSigno(r.flujoA[t]) + '</td>'
+                          + '<td class="py-1.5 px-2 text-right ' + (accA < 0 ? 'text-red-400' : 'text-gray-300') + '">' + conSigno(accA) + '</td>'
+                          + '<td class="py-1.5 px-2 text-right ' + (r.flujoB[t] < 0 ? 'text-red-400' : 'text-neon-purple') + '">' + conSigno(r.flujoB[t]) + '</td>'
+                          + '<td class="py-1.5 pl-2 text-right ' + (accB < 0 ? 'text-red-400' : 'text-gray-300') + '">' + conSigno(accB) + '</td>'
+                          + '</tr>';
+                }
+                if (cuerpo.innerHTML !== html) { cuerpo.innerHTML = html; }
+            }
+
+            /* ---------- Textos y veredictos ---------- */
+            function textoPRI(pri) {
+                return pri === null ? 'no se recupera en 5 años' : decimal(pri) + ' años';
+            }
+
+            function unidadesDeAnio(t) {
+                return esc.ingresos[t] / SIM.precio;
+            }
+
+            function unidadesUniformes() {
+                const u = unidadesDeAnio(0);
+                if (!Number.isInteger(u) || u < SIM.minU || u > SIM.maxU) { return null; }
+                for (let t = 1; t < SIM.anios; t++) {
+                    if (unidadesDeAnio(t) !== u) { return null; }
+                }
+                return u;
+            }
+
+            function textoRitmo(u) {
+                if (u === 1) { return '1 portón al año'; }
+                const porMes = u / 12;
+                if (Number.isInteger(porMes)) {
+                    return porMes === 1 ? '1 portón al mes' : porMes + ' portones al mes';
+                }
+                if (porMes < 1) { return '1 portón cada ' + decimal(12 / u) + ' meses'; }
+                return 'aprox. ' + decimal(porMes) + ' portones al mes';
+            }
+
+            function armarMensaje(r) {
+                const uniforme = unidadesUniformes();
+                const baseVentas = 12 * SIM.precio * SIM.anios;
+                const baseTotal = 12 * SIM.anios * (SIM.precio - SIM.insumoUnit) - (2400000 + 1200000) * SIM.anios;
+                const aniosNegativos = r.flujoA.filter((f) => f < 0).length;
+
+                // Primero lo que puede salir mal: es la lectura mas importante
+                if (r.priA === null && r.priB === null) {
+                    return {
+                        texto: 'Con estas cifras el taller no alcanza a recuperar la inversión en los 5 años del proyecto'
+                             + (aniosNegativos ? ', y hay ' + aniosNegativos + (aniosNegativos === 1 ? ' año con flujo negativo' : ' años con flujo negativo') : '')
+                             + '. Prueba subiendo la producción o bajando los costos fijos.',
+                        borde: 'border-red-500/50', fondo: 'bg-red-500/10'
+                    };
+                }
+                if (aniosNegativos) {
+                    return {
+                        texto: 'Ojo: hay ' + aniosNegativos + (aniosNegativos === 1 ? ' año en que el taller pierde plata' : ' años en que el taller pierde plata')
+                             + ', porque las ventas no alcanzan a cubrir los costos de ese año. Aun así, en los 5 años acumula '
+                             + conSigno(r.totalA) + ' y recupera la inversión en ' + textoPRI(r.priA) + '.',
+                        borde: 'border-yellow-500/50', fondo: 'bg-yellow-500/10'
+                    };
+                }
+
+                if (uniforme !== null) {
+                    if (uniforme === 12 && escenarioActual === 'base') {
+                        return {
+                            texto: 'Este es el caso base del ejercicio: 12 portones al año, uno por mes. El taller deja '
+                                 + conSigno(r.flujoA[0]) + ' al año y recupera los ' + pesos(esc.invA) + ' de inversión en ' + textoPRI(r.priA) + '.',
+                            borde: 'border-neon-blue/40', fondo: 'bg-neon-blue/5'
+                        };
+                    }
+                    if (uniforme > 12) {
+                        return {
+                            texto: 'Fabricando ' + uniforme + ' portones al año (' + textoRitmo(uniforme) + ') vendes '
+                                 + veces(r.ventas / baseVentas) + ' veces lo del caso base… pero tu flujo acumulado es '
+                                 + veces(r.totalA / baseTotal) + ' veces mayor. El arriendo, la luz y el marketing cuestan lo mismo '
+                                 + 'fabriques 12 o ' + uniforme + ': todo lo que produces de más queda casi entero como ganancia.',
+                            borde: 'border-neon-green/50', fondo: 'bg-neon-green/10'
+                        };
+                    }
+                    return {
+                        texto: 'Con ' + uniforme + (uniforme === 1 ? ' portón' : ' portones') + ' al año el taller sigue cubriendo sus costos, '
+                             + 'pero acumula sólo ' + conSigno(r.totalA) + ' en los 5 años. Los costos fijos se reparten entre menos unidades.',
+                        borde: 'border-yellow-500/40', fondo: 'bg-yellow-500/10'
+                    };
+                }
+
+                // Escenario con anos distintos entre si
+                const mejor = r.flujoA.indexOf(Math.max.apply(null, r.flujoA));
+                const peor = r.flujoA.indexOf(Math.min.apply(null, r.flujoA));
+                return {
+                    texto: 'Escenario con años distintos entre sí. El mejor es el año ' + (mejor + 1) + ' (' + conSigno(r.flujoA[mejor])
+                         + ') y el más flojo el año ' + (peor + 1) + ' (' + conSigno(r.flujoA[peor]) + '). En total el taller acumula '
+                         + conSigno(r.totalA) + ' y recupera la inversión en ' + textoPRI(r.priA) + '.',
+                    borde: 'border-neon-blue/40', fondo: 'bg-neon-blue/5'
+                };
+            }
+
+            function veredicto(van, tir) {
+                if (van > 0) {
+                    return { txt: 'VAN positivo: el proyecto rinde más que el 10% exigido'
+                                + (tir !== null ? ', con una rentabilidad real de ' + porcentaje(tir) + '.' : '.') + ' Conviene invertir.',
+                             clase: 'text-neon-green' };
+                }
+                if (Math.round(van) === 0) {
+                    return { txt: 'VAN en cero: el proyecto rinde exactamente el 10% exigido, ni más ni menos.', clase: 'text-yellow-400' };
+                }
+                return { txt: 'VAN negativo: el proyecto no alcanza a rendir el 10% exigido. Con estas cifras se rechaza.',
+                         clase: 'text-red-400' };
+            }
+
+            /* ---------- Actualizacion completa ---------- */
             const cajaMensaje = document.getElementById('sim-mensaje');
 
-            function actualizar(unidades) {
-                const ingresos = unidades * SIM.precio;
-                const insumos = unidades * SIM.insumos;
-                const flujoA = ingresos - insumos - fijos;
-                const flujoB = flujoA - SIM.cuotaPrestamo;
+            function actualizar() {
+                const r = calcular();
 
-                // Tablas
-                escribir('ingresos', conSigno(ingresos));
-                escribir('costoVar', conSigno(-insumos));
-                escribir('flujoA', conSigno(flujoA));
-                escribir('flujoB', conSigno(flujoB));
-                pintar('flujoA', flujoA >= 0, 'text-neon-blue');
-                pintar('flujoB', flujoB >= 0, 'text-neon-purple');
+                pintarCeldas();
+                pintarFlujos(r);
+                pintarRecorrido(r);
 
-                // Periodo de recuperacion de cada caso
-                [['A', SIM.inversionTotal, flujoA], ['B', SIM.inversionPropia, flujoB]].forEach(([caso, inv, flujo]) => {
-                    if (flujo > 0) {
-                        const anios = inv / flujo;
-                        escribir('pri' + caso, decimal(anios) + ' Años');
-                        escribir('pri' + caso + 'Detalle', anios > 5 ? '(supera los 5 años del proyecto)' : '(' + enMeses(anios) + ')');
-                        escribir('pri' + caso + 'Texto', decimal(anios) + ' años');
-                    } else {
+                // Control de unidades: refleja la produccion cuando los 5 anos son iguales
+                const uniforme = unidadesUniformes();
+                document.querySelectorAll('.sim-unidades').forEach((c) => {
+                    const v = uniforme !== null ? String(uniforme) : String(Math.round(unidadesDeAnio(0)));
+                    if (c !== document.activeElement && c.value !== v) { c.value = v; }
+                });
+                document.querySelectorAll('.sim-mixto').forEach((b) => b.classList.toggle('hidden', uniforme !== null));
+                escribir('unidadPalabra', uniforme === 1 ? 'unidad al año' : 'unidades al año');
+                escribir('ritmo', uniforme !== null ? textoRitmo(uniforme) : 'producción variable');
+                escribir('unidadesTexto', uniforme !== null ? String(uniforme) : 'varias');
+
+                // Indicadores del modal
+                escribir('invA', conSigno(-esc.invA));
+                escribir('invB', conSigno(-esc.invB));
+                escribir('totalA', conSigno(r.totalA));
+                escribir('totalB', conSigno(r.totalB));
+                escribir('priATexto', textoPRI(r.priA));
+                escribir('priBTexto', textoPRI(r.priB));
+                escribir('vanA', conSigno(r.vanA));
+                escribir('vanB', conSigno(r.vanB));
+                escribir('tirA', r.tirA === null ? 'no calculable' : porcentaje(r.tirA));
+                escribir('tirB', r.tirB === null ? 'no calculable' : porcentaje(r.tirB));
+                escribir('ventasTotales', conSigno(r.ventas));
+                escribir('insumosTotales', conSigno(-r.insumos));
+                escribir('fijosTotales', conSigno(-r.fijos));
+                escribir('cuotasTotales', conSigno(-r.cuotas));
+
+                [['A', r.vanA, r.tirA], ['B', r.vanB, r.tirB]].forEach(([caso, van, tir]) => {
+                    const v = veredicto(van, tir);
+                    escribir('veredicto' + caso, v.txt);
+                    document.querySelectorAll('[data-sim="veredicto' + caso + '"]').forEach((el) => {
+                        el.className = 'text-xs mt-3 pt-3 border-t border-gray-800 leading-relaxed ' + v.clase;
+                    });
+                    document.querySelectorAll('[data-sim="van' + caso + '"]').forEach((el) => {
+                        el.className = 'font-mono font-bold ' + (van >= 0 ? 'text-neon-green' : 'text-red-400');
+                    });
+                });
+
+                // Cajas de PRI bajo cada tabla
+                [['A', r.priA], ['B', r.priB]].forEach(([caso, pri]) => {
+                    if (pri === null) {
                         escribir('pri' + caso, 'No se recupera');
-                        escribir('pri' + caso + 'Detalle', '(el flujo anual no es positivo)');
-                        escribir('pri' + caso + 'Texto', 'nunca, a este ritmo');
+                        escribir('pri' + caso + 'Detalle', '(no alcanza dentro de los 5 años)');
+                    } else {
+                        escribir('pri' + caso, decimal(pri) + ' Años');
+                        escribir('pri' + caso + 'Detalle', '(' + enMeses(pri) + ')');
                     }
                 });
 
-                // Resumen y textos de conclusion
-                escribir('unidadesTexto', String(unidades));
-                escribir('flujoATexto', pesos(flujoA));
-                escribir('flujoBTexto', pesos(flujoB));
-                escribir('ingresosResumen', pesos(ingresos));
-                escribir('flujoAResumen', pesos(flujoA));
-                escribir('flujoBResumen', pesos(flujoB));
-                escribir('equilibrio', String(equilibrioA));
-                escribir('ritmo', textoRitmo(unidades));
-                escribir('unidadPalabra', unidades === 1 ? 'unidad al año' : 'unidades al año');
+                // Conclusiones al pie de cada tabla
+                escribirHTML('concA',
+                    'Al no tener deudas bancarias, el 100% de la inversión sale del bolsillo del estudiante. En los 5 años el taller acumula un flujo neto de <strong class="text-white">'
+                    + conSigno(r.totalA) + '</strong> y ' + (r.priA === null
+                        ? 'no alcanza a recuperar los <strong class="text-white">' + pesos(esc.invA) + '</strong> invertidos dentro del horizonte del proyecto.'
+                        : 'recupera la inversión de <strong class="text-white">' + pesos(esc.invA) + '</strong> en <strong class="text-white">' + decimal(r.priA) + ' años</strong>.'));
+                escribirHTML('concB',
+                    'Con el crédito, el estudiante arriesga sólo <strong class="text-white">' + pesos(esc.invB)
+                    + '</strong> propios. Descontadas las cuotas acumula <strong class="text-white">' + conSigno(r.totalB) + '</strong> en 5 años y '
+                    + (r.priB === null
+                        ? 'no alcanza a recuperar lo suyo dentro del proyecto.'
+                        : 'recupera lo suyo en <strong class="text-white">' + decimal(r.priB) + ' años</strong>.'));
 
-                // Mensaje pedagogico segun el escenario
-                let mensaje, borde, fondo;
-                if (flujoA < 0) {
-                    mensaje = 'Con ' + unidades + (unidades === 1 ? ' portón' : ' portones') + ' al año no alcanzas a pagar los costos fijos: el taller pierde plata. '
-                            + 'Necesitas fabricar al menos ' + equilibrioA + ' al año solo para empatar.';
-                    borde = 'border-red-500/50'; fondo = 'bg-red-500/10';
-                } else if (flujoA === 0) {
-                    mensaje = 'Con ' + equilibrioA + ' portones al año estás justo en el punto de equilibrio: cubres todos los costos, '
-                            + 'pero no ganas nada y nunca recuperas la inversión. Recién desde el portón ' + (equilibrioA + 1) + ' empiezas a ganar.';
-                    borde = 'border-yellow-500/50'; fondo = 'bg-yellow-500/10';
-                } else if (unidades === SIM.base) {
-                    mensaje = 'Este es el caso base del ejercicio: 12 portones al año, uno por mes.';
-                    borde = 'border-neon-blue/40'; fondo = 'bg-neon-blue/5';
-                } else if (unidades > SIM.base) {
-                    mensaje = 'Fabricando ' + unidades + ' portones al año (' + textoRitmo(unidades) + ') vendes '
-                            + veces(unidades / SIM.base) + ' veces lo del caso base… pero tu flujo neto es '
-                            + veces(flujoA / flujoBase) + ' veces mayor. El arriendo, la luz y el marketing cuestan lo mismo '
-                            + 'fabriques 12 o ' + unidades + ': todo lo que produces de más queda casi entero como ganancia.';
-                    borde = 'border-neon-green/50'; fondo = 'bg-neon-green/10';
-                } else {
-                    mensaje = 'Con ' + unidades + (unidades === 1 ? ' portón' : ' portones') + ' al año sigues cubriendo los costos fijos, '
-                            + 'pero te queda bastante menos que en el caso base. Los costos fijos se reparten entre menos unidades.';
-                    borde = 'border-yellow-500/40'; fondo = 'bg-yellow-500/10';
-                }
-                escribir('mensaje', mensaje);
+                // Mensaje principal del modal
+                const m = armarMensaje(r);
+                escribir('mensaje', m.texto);
                 if (cajaMensaje) {
-                    cajaMensaje.className = 'mt-3 px-4 py-3 rounded-xl border text-sm leading-relaxed text-gray-300 ' + borde + ' ' + fondo;
+                    cajaMensaje.className = 'px-4 py-3 rounded-xl border text-sm leading-relaxed text-gray-300 ' + m.borde + ' ' + m.fondo;
                 }
 
-                document.querySelectorAll('.sim-preset').forEach((b) => {
-                    b.classList.toggle('activo', Number(b.dataset.preset) === unidades);
+                document.querySelectorAll('.sim-escenario').forEach((b) => {
+                    b.classList.toggle('activo', b.dataset.escenario === escenarioActual);
                 });
             }
 
-            let unidadesActuales = SIM.base;
-
-            function fijarUnidades(valor) {
-                let u = Math.round(Number(valor));
-                if (!Number.isFinite(u)) { u = SIM.base; }
-                u = Math.min(SIM.max, Math.max(SIM.min, u));
-                unidadesActuales = u;
-                // las dos tablas comparten el mismo numero: se mantienen sincronizadas
-                simCampos.forEach((c) => { if (c.value !== String(u)) { c.value = u; } });
-                actualizar(u);
-            }
-
-            simCampos.forEach((campo) => {
-                campo.addEventListener('input', () => {
-                    // se recalcula al vuelo, pero sin corregir el valor mientras se escribe
-                    const u = Math.round(Number(campo.value));
-                    if (Number.isFinite(u) && u >= SIM.min && u <= SIM.max) {
-                        unidadesActuales = u;
-                        simCampos.forEach((otro) => { if (otro !== campo) { otro.value = u; } });
-                        actualizar(u);
-                    }
+            /* ---------- Interaccion con las casillas ---------- */
+            simCampos.forEach((inp) => {
+                inp.addEventListener('focus', () => {
+                    // se muestra el numero pelado para que sea comodo escribir encima
+                    inp.value = String(valorDe(inp.dataset.fila, Number(inp.dataset.anio), inp.dataset.caso));
+                    inp.select();
                 });
-                campo.addEventListener('change', () => fijarUnidades(campo.value));
+                inp.addEventListener('input', () => {
+                    escenarioActual = 'personalizado';
+                    fijarValor(inp.dataset.fila, Number(inp.dataset.anio), inp.dataset.caso, soloDigitos(inp.value));
+                    actualizar();
+                });
+                inp.addEventListener('blur', () => {
+                    fijarValor(inp.dataset.fila, Number(inp.dataset.anio), inp.dataset.caso, soloDigitos(inp.value));
+                    actualizar();
+                });
+                inp.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') { inp.blur(); }
+                });
             });
 
+            /* ---------- Control de unidades: aplica a los cinco anos ---------- */
+            function aplicarUnidades(valor) {
+                let u = Math.round(Number(String(valor).replace(/[^\d]/g, '')));
+                if (!Number.isFinite(u) || u < SIM.minU) { u = SIM.minU; }
+                u = Math.min(SIM.maxU, u);
+                for (let t = 0; t < SIM.anios; t++) {
+                    esc.ingresos[t] = u * SIM.precio;
+                    esc.insumos[t] = u * SIM.insumoUnit;
+                }
+                escenarioActual = (u === 12) ? 'base' : 'personalizado';
+                actualizar();
+            }
+
+            document.querySelectorAll('.sim-unidades').forEach((campo) => {
+                campo.addEventListener('input', () => {
+                    const u = Number(campo.value.replace(/[^\d]/g, ''));
+                    if (Number.isFinite(u) && u >= SIM.minU && u <= SIM.maxU) { aplicarUnidades(u); }
+                });
+                campo.addEventListener('change', () => aplicarUnidades(campo.value));
+            });
             document.querySelectorAll('.sim-menos').forEach((b) => {
-                b.addEventListener('click', () => fijarUnidades(unidadesActuales - 1));
+                b.addEventListener('click', () => aplicarUnidades((unidadesUniformes() || Math.round(unidadesDeAnio(0))) - 1));
             });
             document.querySelectorAll('.sim-mas').forEach((b) => {
-                b.addEventListener('click', () => fijarUnidades(unidadesActuales + 1));
-            });
-            document.querySelectorAll('.sim-preset').forEach((b) => {
-                b.addEventListener('click', () => fijarUnidades(b.dataset.preset));
+                b.addEventListener('click', () => aplicarUnidades((unidadesUniformes() || Math.round(unidadesDeAnio(0))) + 1));
             });
 
-            /* ---- Ventana emergente con el analisis ---- */
+            /* ---------- Escenarios de ejemplo y restauracion ---------- */
+            function cargarEscenario(nombre) {
+                const e = ESCENARIOS[nombre];
+                if (!e) { return; }
+                esc = e.arma();
+                escenarioActual = nombre;
+                escribir('escenarioNota', e.nota);
+                actualizar();
+            }
+
+            document.querySelectorAll('.sim-escenario').forEach((b) => {
+                b.addEventListener('click', () => cargarEscenario(b.dataset.escenario));
+            });
+            document.querySelectorAll('.sim-reset').forEach((b) => {
+                b.addEventListener('click', () => cargarEscenario('base'));
+            });
+
+            /* ---------- Ventana emergente con el analisis ---------- */
             const modal = document.getElementById('sim-modal');
             const ojos = Array.from(document.querySelectorAll('.sim-ojo'));
             let focoPrevio = null;
@@ -1629,9 +2018,10 @@ Check your Browserslist config to be sure that your targets are set up correctly
 
             function abrirModal() {
                 focoPrevio = document.activeElement;
+                actualizar();                              // el modal siempre abre con las cifras del momento
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
-                document.body.style.overflow = 'hidden';   // el fondo no se desplaza mientras esta abierto
+                document.body.style.overflow = 'hidden';
                 pintarOjos(true);
                 const caja = modal.querySelector('.sim-modal-caja');
                 if (caja) { caja.scrollTop = 0; }
@@ -1659,7 +2049,7 @@ Check your Browserslist config to be sure that your targets are set up correctly
                 if (e.key === 'Escape' && modalAbierto()) { cerrarModal(); }
             });
 
-            actualizar(SIM.base);
+            actualizar();
             pintarOjos(false);
         }
 

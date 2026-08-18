@@ -36,31 +36,44 @@ proyecto-tp.html#ge-caso      abre Gestión en el caso práctico
 
 ## El simulador del caso práctico
 
-Dentro de **Evaluación → Caso Práctico**, la fila *Ingresos por Ventas* de cada tabla trae un
-campo con la cantidad de unidades al año (de 1 a 60), con botones − y +. Las dos tablas comparten
-el mismo número: al cambiarlo en cualquiera de ellas, ambas se recalculan enteras —ingresos,
-costos de insumos, flujo neto, periodo de recuperación y los textos de conclusión.
+Dentro de **Evaluación → Caso Práctico**, las 47 casillas de los dos flujos de caja son
+editables, año por año. Ningún año tiene por qué parecerse al anterior: se puede subir la
+producción del año 3, aplicar inflación a los costos, dejar el arriendo en cero o cambiar la
+inversión inicial. Cada vez que se toca una casilla se recalcula todo desde cero.
 
-El botón con forma de **ojo** abre una ventana emergente que oscurece el fondo y explica el
-escenario: el ritmo de trabajo, las ventas del año, el flujo neto de los dos casos, el punto de
-equilibrio y de dónde sale cada número. Se cierra con el mismo ojo, con la tecla Escape o
-pulsando fuera de ella.
+La fila *Ingresos por Ventas* trae además un contador de unidades (1 a 60) con botones − y +,
+que aplica la misma producción a los cinco años de una vez. Las filas de operación son las
+mismas en ambas tablas —es el mismo taller, lo único que cambia es cómo se financia—, así que
+editarlas en cualquiera de las dos actualiza las dos.
 
-El modelo que hay detrás es el mismo del ejercicio original:
+El botón con forma de **ojo** abre una ventana emergente que oscurece el fondo y entrega el
+análisis completo del escenario que esté en pantalla en ese momento:
 
-| Concepto | Valor | ¿Cambia al producir más? |
+- **PRI** de cada caso, calculado acumulando los flujos año a año (no dividiendo la inversión
+  por el flujo, porque con años distintos ese atajo no sirve)
+- **VAN** al 10% y **TIR** obtenida por bisección, con el veredicto correspondiente
+- El recorrido año por año del flujo acumulado, marcando en verde el año en que cada caso
+  recupera su inversión
+- Cinco escenarios listos para mostrar en clase: caso base, producción creciente, inflación del
+  5% en los costos, taller sin arriendo y un año malo
+
+El modelo de partida:
+
+| Concepto | Valor | ¿Depende de cuánto produzcas? |
 |---|---|---|
+| Inversión inicial (Caso A) | $4.500.000 | — |
+| Capital propio + crédito (Caso B) | $2.000.000 + $2.500.000 | — |
 | Precio de venta de un portón | $1.000.000 | Sí, por unidad |
 | Fierros e insumos por portón | $500.000 | Sí, por unidad |
-| Arriendo y luz del taller | $2.500.000 al año | **No** |
-| Administración y marketing | $1.500.000 al año | **No** |
+| Arriendo y luz del taller | $2.400.000 al año | **No** |
+| Administración y marketing | $1.200.000 al año | **No** |
 | Cuota del préstamo (Caso B) | $800.000 al año | **No** |
 
-Ahí está la lección: como los costos fijos no se mueven, **la ganancia crece mucho más rápido
-que las ventas**. Al pasar de 12 a 24 portones al año las ventas se duplican, pero el flujo neto
-se multiplica por cuatro ($2.000.000 → $8.000.000). Las filas que no cambian están marcadas en
-la tabla con una etiqueta *«no cambia»*, y el simulador avisa cuando la producción cae bajo el
-punto de equilibrio (8 portones al año), donde el taller deja de ganar dinero.
+Ahí está la lección principal: como los costos fijos no se mueven, **la ganancia crece mucho más
+rápido que las ventas**. Al pasar de 12 a 24 portones al año las ventas se duplican, pero el
+flujo neto se multiplica por cuatro. Las filas que no dependen de la producción están marcadas
+con la etiqueta *«costo fijo»*, y el escenario de inflación deja ver el efecto contrario: con
+los mismos ingresos, el margen se estrangula de $2.400.000 a $331.139 en cinco años.
 
 ## Cómo está hecho
 
