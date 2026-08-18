@@ -36,6 +36,21 @@ proyecto-tp.html#ge-caso      abre Gestión en el caso práctico
 
 ## El simulador del caso práctico
 
+### Constante o editable
+
+Un botón con forma de **candado** decide cómo se comporta el flujo, y al pasar el mouse por
+encima explica la diferencia:
+
+- **Flujo constante** (como arranca el sitio): las casillas quedan fijas y los cinco años son
+  iguales, tal como el ejercicio original. Sólo se cambia la cantidad de portones.
+- **Flujo editable**: cada casilla de cada año se puede modificar, para simular inflación, un
+  año malo o dejar de pagar arriendo.
+
+Elegir un escenario que necesita años distintos desbloquea el flujo automáticamente, y
+*Restaurar caso base* devuelve todo —cifras, tasa y candado— a su estado inicial.
+
+### Las casillas
+
 Dentro de **Evaluación → Caso Práctico**, las 47 casillas de los dos flujos de caja son
 editables, año por año. Ningún año tiene por qué parecerse al anterior: se puede subir la
 producción del año 3, aplicar inflación a los costos, dejar el arriendo en cero o cambiar la
@@ -51,7 +66,11 @@ análisis completo del escenario que esté en pantalla en ese momento:
 
 - **PRI** de cada caso, calculado acumulando los flujos año a año (no dividiendo la inversión
   por el flujo, porque con años distintos ese atajo no sirve)
-- **VAN** al 10% y **TIR** obtenida por bisección, con el veredicto correspondiente
+- **VAN** y **TIR** (obtenida por bisección), con el veredicto correspondiente. La
+  **rentabilidad exigida es editable** de 0% a 100%: al subirla, el mismo proyecto vale menos, y
+  al llegar a la TIR el VAN cae a cero y el veredicto avisa que ahí deja de convenir. Como cada
+  caso tiene su propia TIR, se ve que exigiendo un 60% el flujo puro se rechaza mientras el
+  financiado todavía crea valor
 - El recorrido año por año del flujo acumulado, marcando en verde el año en que cada caso
   recupera su inversión
 - Cinco escenarios listos para mostrar en clase: caso base, producción creciente, inflación del

@@ -129,6 +129,9 @@
             border-color: #00f3ff;
             background: rgba(0, 243, 255, 0.10);
         }
+        /* En modo constante las casillas se ven como texto normal, sin invitar a escribir */
+        input.celda-editable[readonly] { cursor: default; }
+        input.celda-editable[readonly]:hover { border-color: transparent; background: transparent; }
         input.celda-editable::-webkit-outer-spin-button,
         input.celda-editable::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         /* El campo de unidades usa los botones - / + del propio sitio, no las flechas del navegador */
@@ -474,6 +477,18 @@
                     </p>
 
                     <div class="flex flex-wrap items-center justify-center gap-3 mt-6">
+                        <!-- Interruptor entre flujo constante y flujo editable -->
+                        <div class="relative inline-block group">
+                            <button type="button" id="sim-candado" class="inline-flex items-center gap-2 px-5 py-3 rounded-full border-2 font-bold transition border-yellow-500 bg-yellow-500/10 text-yellow-400" aria-pressed="true">
+                                <i class="fa-solid fa-lock"></i><span data-sim="candadoTexto">Flujo constante</span>
+                            </button>
+                            <span class="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-3 w-72 px-4 py-3 rounded-xl bg-gray-950 border border-neon-blue/50 text-xs text-gray-300 leading-relaxed text-left shadow-2xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 z-40">
+                                <strong class="block text-white mb-1">¿Constante o editable?</strong>
+                                <span class="block"><strong class="text-yellow-400">Constante:</strong> todos los años iguales, como el ejercicio original. Sólo se cambia la cantidad de portones.</span>
+                                <span class="block mt-1"><strong class="text-neon-blue">Editable:</strong> cada casilla de cada año se puede modificar, para simular inflación, un año malo o dejar de pagar arriendo.</span>
+                            </span>
+                        </div>
+
                         <button type="button" class="sim-ojo inline-flex items-center gap-3 px-6 py-3 rounded-full bg-neon-blue/10 border border-neon-blue text-neon-blue font-bold hover:bg-neon-blue hover:text-black transition">
                             <i class="fa-solid fa-eye"></i><span data-sim="ojoTexto">Ver análisis del escenario</span>
                         </button>
@@ -481,6 +496,7 @@
                             <i class="fa-solid fa-rotate-left"></i> Restaurar caso base
                         </button>
                     </div>
+                    <p class="text-xs text-gray-500 mt-3" data-sim="modoNota">Las casillas están fijas. Pulsa el candado para poder editar cada año por separado.</p>
                 </div>
 
                 <!-- ============ Caso A: Flujo Puro ============ -->
@@ -1150,6 +1166,26 @@
                     <span data-sim="mensaje">Este es el caso base del ejercicio: 12 portones al año, uno por mes.</span>
                 </div>
 
+                <!-- Tasa de descuento: es el "mínimo exigido" contra el que se juzga el proyecto -->
+                <div class="bg-black/30 rounded-xl border border-gray-800 px-4 py-3">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <label for="sim-tasa" class="text-sm font-bold text-white">Rentabilidad exigida <span class="font-normal text-gray-400">(tasa de descuento)</span></label>
+                        <span class="inline-flex items-center rounded-lg border border-neon-blue/60 bg-black/60 overflow-hidden">
+                            <button type="button" class="sim-tasa-menos px-2.5 py-1 text-neon-blue hover:bg-neon-blue/20 transition" aria-label="Bajar un punto la tasa">−</button>
+                            <input id="sim-tasa" type="text" inputmode="numeric" class="w-12 bg-transparent text-center text-base font-bold text-neon-blue py-1 focus:outline-none" value="10" aria-label="Tasa de descuento en por ciento">
+                            <span class="pr-1 text-neon-blue font-bold">%</span>
+                            <button type="button" class="sim-tasa-mas px-2.5 py-1 text-neon-blue hover:bg-neon-blue/20 transition" aria-label="Subir un punto la tasa">+</button>
+                        </span>
+                        <span class="flex flex-wrap gap-1.5">
+                            <button type="button" data-tasa="5"  class="sim-tasa-preset px-2.5 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">5%</button>
+                            <button type="button" data-tasa="10" class="sim-tasa-preset px-2.5 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">10%</button>
+                            <button type="button" data-tasa="20" class="sim-tasa-preset px-2.5 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">20%</button>
+                            <button type="button" data-tasa="30" class="sim-tasa-preset px-2.5 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">30%</button>
+                        </span>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed mt-2" data-sim="tasaNota">Es el mínimo que exiges ganar por arriesgar tu plata. Súbela y verás cómo el mismo proyecto vale menos: sobre la TIR, el VAN se vuelve negativo.</p>
+                </div>
+
                 <!-- Indicadores de los dos casos -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div class="bg-black/40 rounded-2xl border border-neon-blue/30 p-4">
@@ -1158,7 +1194,7 @@
                             <div class="flex justify-between gap-3"><span class="text-gray-400">Inversión</span><span class="font-mono text-red-400" data-sim="invA">-$4.500.000</span></div>
                             <div class="flex justify-between gap-3"><span class="text-gray-400">Flujo acumulado 5 años</span><span class="font-mono text-neon-blue font-bold" data-sim="totalA">+$12.000.000</span></div>
                             <div class="flex justify-between gap-3"><span class="text-gray-400">PRI</span><span class="font-mono text-white" data-sim="priATexto">1,9 años</span></div>
-                            <div class="flex justify-between gap-3"><span class="text-gray-400">VAN (10%)</span><span class="font-mono font-bold" data-sim="vanA">+$4.597.888</span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-400">VAN (<span data-sim="tasaTexto">10%</span>)</span><span class="font-mono font-bold" data-sim="vanA">+$4.597.888</span></div>
                             <div class="flex justify-between gap-3"><span class="text-gray-400">TIR</span><span class="font-mono text-white" data-sim="tirA">45,0%</span></div>
                         </div>
                         <p class="text-xs mt-3 pt-3 border-t border-gray-800 leading-relaxed" data-sim="veredictoA">VAN positivo: el proyecto genera valor por sobre el 10% exigido.</p>
@@ -1170,7 +1206,7 @@
                             <div class="flex justify-between gap-3"><span class="text-gray-400">Inversión propia</span><span class="font-mono text-red-400" data-sim="invB">-$2.000.000</span></div>
                             <div class="flex justify-between gap-3"><span class="text-gray-400">Flujo acumulado 5 años</span><span class="font-mono text-neon-purple font-bold" data-sim="totalB">+$8.000.000</span></div>
                             <div class="flex justify-between gap-3"><span class="text-gray-400">PRI</span><span class="font-mono text-white" data-sim="priBTexto">1,3 años</span></div>
-                            <div class="flex justify-between gap-3"><span class="text-gray-400">VAN (10%)</span><span class="font-mono font-bold" data-sim="vanB">+$4.065.259</span></div>
+                            <div class="flex justify-between gap-3"><span class="text-gray-400">VAN (<span data-sim="tasaTexto">10%</span>)</span><span class="font-mono font-bold" data-sim="vanB">+$4.065.259</span></div>
                             <div class="flex justify-between gap-3"><span class="text-gray-400">TIR</span><span class="font-mono text-white" data-sim="tirB">75,3%</span></div>
                         </div>
                         <p class="text-xs mt-3 pt-3 border-t border-gray-800 leading-relaxed" data-sim="veredictoB">VAN positivo: el proyecto genera valor por sobre el 10% exigido.</p>
@@ -1473,6 +1509,8 @@
 
             let esc = escenarioBase();
             let escenarioActual = 'base';
+            let tasa = SIM.tasa;        // rentabilidad exigida, editable desde el modal
+            let bloqueado = true;       // el flujo arranca constante, como el ejercicio original
 
             /* ---------- Formato de cifras ---------- */
             const pesos = (n) => '$' + Math.round(Math.abs(n)).toLocaleString('es-CL');
@@ -1480,6 +1518,7 @@
             const decimal = (n) => n.toFixed(1).replace('.', ',');
             const veces = (n) => (Math.abs(n - Math.round(n)) < 0.05 ? String(Math.round(n)) : decimal(n));
             const porcentaje = (n) => (n * 100).toFixed(1).replace('.', ',') + '%';
+            const porcentajeEntero = (n) => Math.round(n * 100) + '%';
             const soloDigitos = (txt) => {
                 const d = String(txt).replace(/[^\d]/g, '');
                 return d === '' ? 0 : Math.min(SIM.tope, parseInt(d, 10));
@@ -1548,7 +1587,7 @@
                     ventas: suma(esc.ingresos), insumos: suma(esc.insumos),
                     fijos: suma(esc.fijos) + suma(esc.admin), cuotas: suma(esc.cuota),
                     priA: calcularPRI(esc.invA, flujoA), priB: calcularPRI(esc.invB, flujoB),
-                    vanA: calcularVAN(esc.invA, flujoA, SIM.tasa), vanB: calcularVAN(esc.invB, flujoB, SIM.tasa),
+                    vanA: calcularVAN(esc.invA, flujoA, tasa), vanB: calcularVAN(esc.invB, flujoB, tasa),
                     tirA: calcularTIR(esc.invA, flujoA), tirB: calcularTIR(esc.invB, flujoB)
                 };
             }
@@ -1731,17 +1770,25 @@
                 };
             }
 
-            function veredicto(van, tir) {
+            // El veredicto compara siempre contra la tasa exigida del momento: si esa
+            // tasa supera a la TIR, el mismo proyecto pasa de conveniente a rechazable.
+            function veredicto(van, tir, inversion) {
+                const exigido = porcentajeEntero(tasa);
+                const conTir = tir !== null ? ' Su TIR es ' + porcentaje(tir) + '.' : '';
+                // Si el VAN queda pegado a cero es porque la tasa exigida alcanzo a la TIR:
+                // ese es justo el punto donde el proyecto deja de convenir.
+                const rozaCero = inversion > 0 && Math.abs(van) < inversion * 0.005;
+                if (rozaCero) {
+                    return { txt: 'VAN prácticamente en cero: exigir un ' + exigido + ' deja el proyecto justo en su TIR'
+                                + (tir !== null ? ' (' + porcentaje(tir) + ')' : '') + '. Apenas empata: un punto más de exigencia y se rechaza.',
+                             clase: 'text-yellow-400' };
+                }
                 if (van > 0) {
-                    return { txt: 'VAN positivo: el proyecto rinde más que el 10% exigido'
-                                + (tir !== null ? ', con una rentabilidad real de ' + porcentaje(tir) + '.' : '.') + ' Conviene invertir.',
+                    return { txt: 'VAN positivo: el proyecto rinde más que el ' + exigido + ' exigido.' + conTir + ' Conviene invertir.',
                              clase: 'text-neon-green' };
                 }
-                if (Math.round(van) === 0) {
-                    return { txt: 'VAN en cero: el proyecto rinde exactamente el 10% exigido, ni más ni menos.', clase: 'text-yellow-400' };
-                }
-                return { txt: 'VAN negativo: el proyecto no alcanza a rendir el 10% exigido. Con estas cifras se rechaza.',
-                         clase: 'text-red-400' };
+                return { txt: 'VAN negativo: el proyecto no alcanza a rendir el ' + exigido + ' que exiges.' + conTir
+                            + ' Con esa exigencia se rechaza.', clase: 'text-red-400' };
             }
 
             /* ---------- Actualizacion completa ---------- */
@@ -1776,13 +1823,14 @@
                 escribir('vanB', conSigno(r.vanB));
                 escribir('tirA', r.tirA === null ? 'no calculable' : porcentaje(r.tirA));
                 escribir('tirB', r.tirB === null ? 'no calculable' : porcentaje(r.tirB));
+                escribir('tasaTexto', porcentajeEntero(tasa));
                 escribir('ventasTotales', conSigno(r.ventas));
                 escribir('insumosTotales', conSigno(-r.insumos));
                 escribir('fijosTotales', conSigno(-r.fijos));
                 escribir('cuotasTotales', conSigno(-r.cuotas));
 
-                [['A', r.vanA, r.tirA], ['B', r.vanB, r.tirB]].forEach(([caso, van, tir]) => {
-                    const v = veredicto(van, tir);
+                [['A', r.vanA, r.tirA, esc.invA], ['B', r.vanB, r.tirB, esc.invB]].forEach(([caso, van, tir, inv]) => {
+                    const v = veredicto(van, tir, inv);
                     escribir('veredicto' + caso, v.txt);
                     document.querySelectorAll('[data-sim="veredicto' + caso + '"]').forEach((el) => {
                         el.className = 'text-xs mt-3 pt-3 border-t border-gray-800 leading-relaxed ' + v.clase;
@@ -1826,21 +1874,92 @@
                 document.querySelectorAll('.sim-escenario').forEach((b) => {
                     b.classList.toggle('activo', b.dataset.escenario === escenarioActual);
                 });
+                document.querySelectorAll('.sim-tasa-preset').forEach((b) => {
+                    b.classList.toggle('activo', Number(b.dataset.tasa) === Math.round(tasa * 100));
+                });
+            }
+
+            /* ---------- Tasa de descuento exigida ---------- */
+            const campoTasa = document.getElementById('sim-tasa');
+
+            function fijarTasa(valor) {
+                let p = Math.round(Number(String(valor).replace(/[^\d]/g, '')));
+                if (!Number.isFinite(p)) { p = 10; }
+                p = Math.min(100, Math.max(0, p));
+                tasa = p / 100;
+                if (campoTasa && campoTasa !== document.activeElement) { campoTasa.value = String(p); }
+                actualizar();
+            }
+
+            if (campoTasa) {
+                campoTasa.addEventListener('input', () => {
+                    const p = Number(campoTasa.value.replace(/[^\d]/g, ''));
+                    if (Number.isFinite(p) && p >= 0 && p <= 100) { tasa = p / 100; actualizar(); }
+                });
+                campoTasa.addEventListener('change', () => fijarTasa(campoTasa.value));
+                campoTasa.addEventListener('keydown', (e) => { if (e.key === 'Enter') { campoTasa.blur(); } });
+            }
+            document.querySelectorAll('.sim-tasa-menos').forEach((b) => {
+                b.addEventListener('click', () => fijarTasa(Math.round(tasa * 100) - 1));
+            });
+            document.querySelectorAll('.sim-tasa-mas').forEach((b) => {
+                b.addEventListener('click', () => fijarTasa(Math.round(tasa * 100) + 1));
+            });
+            document.querySelectorAll('.sim-tasa-preset').forEach((b) => {
+                b.addEventListener('click', () => fijarTasa(b.dataset.tasa));
+            });
+
+            /* ---------- Flujo constante o editable ----------
+               En modo constante las casillas quedan de solo lectura y el flujo se
+               maneja unicamente con la cantidad de portones, igual para los cinco
+               anos, tal como el ejercicio original. */
+            const candado = document.getElementById('sim-candado');
+
+            function aplicarModo() {
+                simCampos.forEach((inp) => { inp.readOnly = bloqueado; });
+                if (candado) {
+                    candado.setAttribute('aria-pressed', String(bloqueado));
+                    candado.className = 'inline-flex items-center gap-2 px-5 py-3 rounded-full border-2 font-bold transition '
+                        + (bloqueado ? 'border-yellow-500 bg-yellow-500/10 text-yellow-400'
+                                     : 'border-neon-blue bg-neon-blue/10 text-neon-blue');
+                    const icono = candado.querySelector('i');
+                    if (icono) {
+                        icono.classList.toggle('fa-lock', bloqueado);
+                        icono.classList.toggle('fa-lock-open', !bloqueado);
+                    }
+                }
+                escribir('candadoTexto', bloqueado ? 'Flujo constante' : 'Flujo editable');
+                escribir('modoNota', bloqueado
+                    ? 'Las casillas están fijas y todos los años son iguales. Pulsa el candado para editar cada año por separado.'
+                    : 'Puedes escribir en cualquier casilla de cualquier año. Pulsa el candado para volver al flujo constante.');
+            }
+
+            function fijarModo(nuevo) {
+                bloqueado = nuevo;
+                aplicarModo();
+                actualizar();
+            }
+
+            if (candado) {
+                candado.addEventListener('click', () => fijarModo(!bloqueado));
             }
 
             /* ---------- Interaccion con las casillas ---------- */
             simCampos.forEach((inp) => {
                 inp.addEventListener('focus', () => {
+                    if (bloqueado) { return; }
                     // se muestra el numero pelado para que sea comodo escribir encima
                     inp.value = String(valorDe(inp.dataset.fila, Number(inp.dataset.anio), inp.dataset.caso));
                     inp.select();
                 });
                 inp.addEventListener('input', () => {
+                    if (bloqueado) { return; }
                     escenarioActual = 'personalizado';
                     fijarValor(inp.dataset.fila, Number(inp.dataset.anio), inp.dataset.caso, soloDigitos(inp.value));
                     actualizar();
                 });
                 inp.addEventListener('blur', () => {
+                    if (bloqueado) { return; }
                     fijarValor(inp.dataset.fila, Number(inp.dataset.anio), inp.dataset.caso, soloDigitos(inp.value));
                     actualizar();
                 });
@@ -1877,12 +1996,19 @@
             });
 
             /* ---------- Escenarios de ejemplo y restauracion ---------- */
+            const ESCENARIOS_VARIABLES = ['creciente', 'inflacion', 'malo'];
+
             function cargarEscenario(nombre) {
                 const e = ESCENARIOS[nombre];
                 if (!e) { return; }
                 esc = e.arma();
                 escenarioActual = nombre;
                 escribir('escenarioNota', e.nota);
+                // estos escenarios tienen anos distintos entre si: requieren el modo editable
+                if (ESCENARIOS_VARIABLES.indexOf(nombre) !== -1 && bloqueado) {
+                    bloqueado = false;
+                    aplicarModo();
+                }
                 actualizar();
             }
 
@@ -1890,7 +2016,13 @@
                 b.addEventListener('click', () => cargarEscenario(b.dataset.escenario));
             });
             document.querySelectorAll('.sim-reset').forEach((b) => {
-                b.addEventListener('click', () => cargarEscenario('base'));
+                b.addEventListener('click', () => {
+                    tasa = SIM.tasa;
+                    if (campoTasa) { campoTasa.value = String(Math.round(SIM.tasa * 100)); }
+                    bloqueado = true;
+                    aplicarModo();
+                    cargarEscenario('base');
+                });
             });
 
             /* ---------- Ventana emergente con el analisis ---------- */
@@ -1945,6 +2077,7 @@
                 if (e.key === 'Escape' && modalAbierto()) { cerrarModal(); }
             });
 
+            aplicarModo();
             actualizar();
             pintarOjos(false);
         }
