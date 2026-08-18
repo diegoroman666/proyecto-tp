@@ -105,6 +105,25 @@
             color: #00f3ff;
             background: rgba(0, 243, 255, 0.12);
         }
+        /* El campo de unidades usa los botones - / + del propio sitio, no las flechas del navegador */
+        .sim-unidades::-webkit-outer-spin-button,
+        .sim-unidades::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .sim-unidades {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        /* La ventana emergente entra suave */
+        #sim-modal:not(.hidden) .sim-modal-caja { animation: sim-modal-in 0.25s ease-out both; }
+        @keyframes sim-modal-in {
+            from { opacity: 0; transform: translateY(16px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #sim-modal:not(.hidden) .sim-modal-caja { animation: none; }
+        }
         /* Vistas: solo un modulo visible a la vez */
         .view[hidden] { display: none; }
         .view { animation: view-in 0.45s ease both; }
@@ -421,71 +440,11 @@
                     </div>
                     <h2 class="font-display text-4xl font-bold text-white mb-4">Proyección Financiera a 5 Años: Taller de Portones</h2>
                     <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed">Para implementar un taller de fabricación metálica e instalación de portones se requiere una inversión inicial de <strong>$5.000.000</strong> en maquinaria y herramientas. Cada portón se vende en <strong class="text-neon-green">$1.000.000</strong> y consume <strong>$500.000</strong> en fierros e insumos.</p>
-                    <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed mt-3">Mueve el simulador y observa cómo cambian los dos flujos de caja: <strong class="text-white">el Puro y el Financiado</strong>.</p>
-                </div>
+                    <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed mt-3">Cambia la cantidad de unidades en la fila <strong class="text-white">Ingresos por Ventas</strong> y las dos tablas se recalculan solas.</p>
 
-                <!-- Datos del modelo: se leen una vez, no necesitan seguir al usuario -->
-                <div class="glass-panel rounded-2xl border border-gray-800 px-5 py-4 mb-4">
-                    <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm text-gray-400">
-                        <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">Por cada portón</span>
-                        <span>Precio de venta <strong class="font-mono text-green-400 ml-1">+$1.000.000</strong></span>
-                        <span>Fierros e insumos <strong class="font-mono text-gray-300 ml-1">-$500.000</strong></span>
-                        <span class="text-white">Te queda <strong class="font-mono text-neon-blue ml-1">+$500.000</strong>
-                            <span class="text-xs text-gray-500 ml-1">(margen de contribución)</span>
-                        </span>
-                    </div>
-                </div>
-
-                <!-- ============ SIMULADOR (acompaña al usuario mientras recorre las tablas) ============ -->
-                <div class="lg:sticky lg:top-24 z-30 mb-10">
-                    <div class="rounded-3xl border border-neon-blue/50 bg-gray-950/95 backdrop-blur-md p-5 md:p-6 shadow-2xl shadow-black/60">
-
-                        <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-                            <label for="sim-unidades" class="text-sm font-bold text-white leading-snug shrink-0 md:max-w-[190px]">
-                                <i class="fa-solid fa-sliders text-neon-blue mr-2"></i>Portones fabricados y vendidos <span class="text-neon-blue">por año</span>
-                            </label>
-                            <div class="flex items-center gap-4 flex-1">
-                                <input id="sim-unidades" type="range" min="1" max="60" step="1" value="12"
-                                       class="flex-1 h-2 cursor-pointer" style="accent-color:#00f3ff"
-                                       aria-describedby="sim-ritmo">
-                                <input id="sim-unidades-num" type="number" min="1" max="60" step="1" value="12"
-                                       class="w-20 bg-black/60 border border-neon-blue/50 rounded-xl text-center text-xl font-bold text-neon-blue py-1.5 focus:outline-none focus:border-neon-blue"
-                                       aria-label="Cantidad de portones por año">
-                            </div>
-                        </div>
-
-                        <div class="flex flex-wrap items-center gap-2 mt-3">
-                            <span id="sim-ritmo" class="text-xs text-gray-400 mr-2">Ritmo: <strong class="text-white" data-sim="ritmo">1 portón al mes</strong></span>
-                            <button type="button" data-preset="6"  class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">6 al año</button>
-                            <button type="button" data-preset="12" class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">1 al mes (12)</button>
-                            <button type="button" data-preset="24" class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">2 al mes (24)</button>
-                            <button type="button" data-preset="48" class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">1 por semana (48)</button>
-                        </div>
-
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mt-4">
-                            <div class="bg-black/40 rounded-xl border border-gray-800 px-3 py-2 text-center">
-                                <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Ventas al año</span>
-                                <span class="font-mono text-sm md:text-base font-bold text-green-400" data-sim="ingresosResumen">$12.000.000</span>
-                            </div>
-                            <div class="bg-black/40 rounded-xl border border-gray-800 px-3 py-2 text-center">
-                                <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Flujo neto (Puro)</span>
-                                <span class="font-mono text-sm md:text-base font-bold text-neon-blue" data-sim="flujoAResumen">$2.000.000</span>
-                            </div>
-                            <div class="bg-black/40 rounded-xl border border-gray-800 px-3 py-2 text-center">
-                                <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Flujo neto (Financiado)</span>
-                                <span class="font-mono text-sm md:text-base font-bold text-neon-purple" data-sim="flujoBResumen">$1.200.000</span>
-                            </div>
-                            <div class="bg-black/40 rounded-xl border border-gray-800 px-3 py-2 text-center">
-                                <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Punto de equilibrio</span>
-                                <span class="font-mono text-sm md:text-base font-bold text-yellow-400"><span data-sim="equilibrio">8</span> al año</span>
-                            </div>
-                        </div>
-
-                        <!-- Lectura del resultado -->
-                        <div id="sim-mensaje" class="mt-3 px-4 py-3 rounded-xl border text-sm leading-relaxed text-gray-300 border-neon-blue/40 bg-neon-blue/5">
-                            <span data-sim="mensaje">Este es el caso base del ejercicio: 12 portones al año, uno por mes.</span>
-                        </div>
-                    </div>
+                    <button type="button" class="sim-ojo mt-6 inline-flex items-center gap-3 px-6 py-3 rounded-full bg-neon-blue/10 border border-neon-blue text-neon-blue font-bold hover:bg-neon-blue hover:text-black transition">
+                        <i class="fa-solid fa-eye"></i><span data-sim="ojoTexto">Ver análisis del escenario</span>
+                    </button>
                 </div>
 
                 <!-- ============ Caso A: Flujo Puro ============ -->
@@ -517,8 +476,19 @@
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
                                     </tr>
-                                    <tr class="border-b border-gray-800">
-                                        <td class="py-3 px-4 text-green-400"><i class="fa-solid fa-plus mr-2"></i>Ingresos por Ventas</td>
+                                    <tr class="border-b border-gray-800 bg-neon-blue/5">
+                                        <td class="py-3 px-4 text-green-400">
+                                            <div class="flex items-center gap-3">
+                                                <span><i class="fa-solid fa-plus mr-2"></i>Ingresos por Ventas</span>
+                                                <span class="inline-flex items-center rounded-lg border border-neon-blue/60 bg-black/60 overflow-hidden">
+                                                    <button type="button" class="sim-menos px-2.5 py-1 text-neon-blue hover:bg-neon-blue/20 transition" aria-label="Quitar una unidad">−</button>
+                                                    <input type="number" class="sim-unidades w-12 bg-transparent text-center text-base font-bold text-neon-blue py-1 focus:outline-none" min="1" max="60" step="1" value="12" aria-label="Unidades vendidas por año">
+                                                    <button type="button" class="sim-mas px-2.5 py-1 text-neon-blue hover:bg-neon-blue/20 transition" aria-label="Agregar una unidad">+</button>
+                                                </span>
+                                                <span class="font-sans text-xs text-gray-400" data-sim="unidadPalabra">unidades al año</span>
+                                                <button type="button" class="sim-ojo text-gray-500 hover:text-neon-blue transition px-1" aria-label="Ver análisis del escenario" title="Ver análisis del escenario"><i class="fa-solid fa-eye"></i></button>
+                                            </div>
+                                        </td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
                                         <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
                                         <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
@@ -608,8 +578,19 @@
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
                                     </tr>
-                                    <tr class="border-b border-gray-800">
-                                        <td class="py-3 px-4 text-green-400"><i class="fa-solid fa-plus mr-2"></i>Ingresos por Ventas</td>
+                                    <tr class="border-b border-gray-800 bg-neon-purple/5">
+                                        <td class="py-3 px-4 text-green-400">
+                                            <div class="flex items-center gap-3">
+                                                <span><i class="fa-solid fa-plus mr-2"></i>Ingresos por Ventas</span>
+                                                <span class="inline-flex items-center rounded-lg border border-neon-purple/60 bg-black/60 overflow-hidden">
+                                                    <button type="button" class="sim-menos px-2.5 py-1 text-neon-purple hover:bg-neon-purple/20 transition" aria-label="Quitar una unidad">−</button>
+                                                    <input type="number" class="sim-unidades w-12 bg-transparent text-center text-base font-bold text-neon-purple py-1 focus:outline-none" min="1" max="60" step="1" value="12" aria-label="Unidades vendidas por año">
+                                                    <button type="button" class="sim-mas px-2.5 py-1 text-neon-purple hover:bg-neon-purple/20 transition" aria-label="Agregar una unidad">+</button>
+                                                </span>
+                                                <span class="font-sans text-xs text-gray-400" data-sim="unidadPalabra">unidades al año</span>
+                                                <button type="button" class="sim-ojo text-gray-500 hover:text-neon-purple transition px-1" aria-label="Ver análisis del escenario" title="Ver análisis del escenario"><i class="fa-solid fa-eye"></i></button>
+                                            </div>
+                                        </td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
                                         <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
                                         <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
@@ -1093,6 +1074,77 @@
         </main>
     </div>
 
+    <!-- ====== Ventana emergente con el análisis del escenario simulado ====== -->
+    <div id="sim-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="sim-modal-titulo">
+        <div class="absolute inset-0 bg-black/85 backdrop-blur-sm" data-cerrar-sim></div>
+
+        <div class="sim-modal-caja relative w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-3xl border border-neon-blue/50 bg-gray-950 shadow-2xl shadow-black/80">
+            <div class="sticky top-0 flex items-start justify-between gap-4 bg-gray-950 border-b border-gray-800 px-6 py-4 rounded-t-3xl">
+                <div>
+                    <h3 id="sim-modal-titulo" class="font-display text-xl font-bold text-white leading-tight">
+                        <i class="fa-solid fa-chart-line text-neon-blue mr-2"></i>Análisis del escenario
+                    </h3>
+                    <p class="text-xs text-gray-400 uppercase tracking-widest font-semibold mt-1">
+                        <span data-sim="unidadesTexto">12</span> portones al año · <span data-sim="ritmo">1 portón al mes</span>
+                    </p>
+                </div>
+                <button type="button" class="sim-ojo text-gray-400 hover:text-white transition p-2 -m-2 shrink-0" aria-label="Cerrar análisis" title="Ocultar análisis">
+                    <i class="fa-solid fa-eye-slash text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5">
+                <!-- Atajos -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-xs text-gray-500 uppercase tracking-widest font-bold mr-1">Prueba con:</span>
+                    <button type="button" data-preset="6"  class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">6 al año</button>
+                    <button type="button" data-preset="12" class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">1 al mes (12)</button>
+                    <button type="button" data-preset="24" class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">2 al mes (24)</button>
+                    <button type="button" data-preset="48" class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">1 por semana (48)</button>
+                </div>
+
+                <!-- Cifras del escenario -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-black/40 rounded-xl border border-gray-800 px-4 py-3">
+                        <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Ventas al año</span>
+                        <span class="font-mono text-lg font-bold text-green-400" data-sim="ingresosResumen">$12.000.000</span>
+                    </div>
+                    <div class="bg-black/40 rounded-xl border border-gray-800 px-4 py-3">
+                        <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Punto de equilibrio</span>
+                        <span class="font-mono text-lg font-bold text-yellow-400"><span data-sim="equilibrio">8</span> al año</span>
+                    </div>
+                    <div class="bg-black/40 rounded-xl border border-neon-blue/30 px-4 py-3">
+                        <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Flujo neto (Puro)</span>
+                        <span class="font-mono text-lg font-bold text-neon-blue" data-sim="flujoAResumen">$2.000.000</span>
+                        <span class="block text-[11px] text-gray-500 mt-0.5">Recupera en <span data-sim="priATexto">2,5 años</span></span>
+                    </div>
+                    <div class="bg-black/40 rounded-xl border border-neon-purple/30 px-4 py-3">
+                        <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Flujo neto (Financiado)</span>
+                        <span class="font-mono text-lg font-bold text-neon-purple" data-sim="flujoBResumen">$1.200.000</span>
+                        <span class="block text-[11px] text-gray-500 mt-0.5">Recupera en <span data-sim="priBTexto">1,7 años</span></span>
+                    </div>
+                </div>
+
+                <!-- Explicación del escenario -->
+                <div id="sim-mensaje" class="px-4 py-3 rounded-xl border text-sm leading-relaxed text-gray-300 border-neon-blue/40 bg-neon-blue/5">
+                    <span data-sim="mensaje">Este es el caso base del ejercicio: 12 portones al año, uno por mes.</span>
+                </div>
+
+                <!-- Como se arma el calculo -->
+                <div class="bg-black/30 rounded-xl border border-gray-800 p-4">
+                    <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-3">De dónde salen los números</p>
+                    <div class="space-y-2 text-sm text-gray-400">
+                        <div class="flex justify-between gap-4"><span>Precio de venta de cada portón</span><span class="font-mono text-green-400">+$1.000.000</span></div>
+                        <div class="flex justify-between gap-4"><span>Fierros e insumos de cada portón</span><span class="font-mono text-gray-300">-$500.000</span></div>
+                        <div class="flex justify-between gap-4 border-t border-gray-700 pt-2 text-white"><span class="font-bold">Te queda por portón</span><span class="font-mono font-bold text-neon-blue">+$500.000</span></div>
+                        <div class="flex justify-between gap-4 pt-2"><span>Arriendo, luz, administración y marketing <span class="text-yellow-500 text-xs">(no cambian)</span></span><span class="font-mono text-yellow-400">-$4.000.000</span></div>
+                    </div>
+                    <p class="text-xs text-gray-500 leading-relaxed mt-3">Como los costos fijos son los mismos fabriques pocas o muchas unidades, cada portón extra deja casi entera su ganancia. Por eso el flujo neto sube mucho más rápido que las ventas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         /* ---------------- Fondo 3D compartido por ambos modulos ---------------- */
         const scene = new THREE.Scene();
@@ -1292,10 +1344,9 @@
             max: 60
         };
 
-        const simSlider = document.getElementById('sim-unidades');
-        const simCampo = document.getElementById('sim-unidades-num');
+        const simCampos = Array.from(document.querySelectorAll('.sim-unidades'));
 
-        if (simSlider && simCampo) {
+        if (simCampos.length) {
             const pesos = (n) => '$' + Math.round(Math.abs(n)).toLocaleString('es-CL');
             const conSigno = (n) => (Math.round(n) === 0 ? '' : (n < 0 ? '-' : '+')) + pesos(n);
             const decimal = (n) => n.toFixed(1).replace('.', ',');
@@ -1382,6 +1433,7 @@
                 escribir('flujoBResumen', pesos(flujoB));
                 escribir('equilibrio', String(equilibrioA));
                 escribir('ritmo', textoRitmo(unidades));
+                escribir('unidadPalabra', unidades === 1 ? 'unidad al año' : 'unidades al año');
 
                 // Mensaje pedagogico segun el escenario
                 let mensaje, borde, fondo;
@@ -1417,30 +1469,94 @@
                 });
             }
 
+            let unidadesActuales = SIM.base;
+
             function fijarUnidades(valor) {
                 let u = Math.round(Number(valor));
                 if (!Number.isFinite(u)) { u = SIM.base; }
                 u = Math.min(SIM.max, Math.max(SIM.min, u));
-                simSlider.value = u;
-                simCampo.value = u;
+                unidadesActuales = u;
+                // las dos tablas comparten el mismo numero: se mantienen sincronizadas
+                simCampos.forEach((c) => { if (c.value !== String(u)) { c.value = u; } });
                 actualizar(u);
             }
 
-            simSlider.addEventListener('input', () => fijarUnidades(simSlider.value));
-            simCampo.addEventListener('input', () => {
-                // se recalcula al vuelo, pero sin forzar el valor mientras se escribe
-                const u = Number(simCampo.value);
-                if (Number.isFinite(u) && u >= SIM.min && u <= SIM.max) {
-                    simSlider.value = Math.round(u);
-                    actualizar(Math.round(u));
-                }
+            simCampos.forEach((campo) => {
+                campo.addEventListener('input', () => {
+                    // se recalcula al vuelo, pero sin corregir el valor mientras se escribe
+                    const u = Math.round(Number(campo.value));
+                    if (Number.isFinite(u) && u >= SIM.min && u <= SIM.max) {
+                        unidadesActuales = u;
+                        simCampos.forEach((otro) => { if (otro !== campo) { otro.value = u; } });
+                        actualizar(u);
+                    }
+                });
+                campo.addEventListener('change', () => fijarUnidades(campo.value));
             });
-            simCampo.addEventListener('change', () => fijarUnidades(simCampo.value));
+
+            document.querySelectorAll('.sim-menos').forEach((b) => {
+                b.addEventListener('click', () => fijarUnidades(unidadesActuales - 1));
+            });
+            document.querySelectorAll('.sim-mas').forEach((b) => {
+                b.addEventListener('click', () => fijarUnidades(unidadesActuales + 1));
+            });
             document.querySelectorAll('.sim-preset').forEach((b) => {
                 b.addEventListener('click', () => fijarUnidades(b.dataset.preset));
             });
 
+            /* ---- Ventana emergente con el analisis ---- */
+            const modal = document.getElementById('sim-modal');
+            const ojos = Array.from(document.querySelectorAll('.sim-ojo'));
+            let focoPrevio = null;
+
+            function pintarOjos(abierto) {
+                ojos.forEach((b) => {
+                    const icono = b.querySelector('i');
+                    if (icono) {
+                        icono.classList.toggle('fa-eye', !abierto);
+                        icono.classList.toggle('fa-eye-slash', abierto);
+                    }
+                    const rotulo = abierto ? 'Ocultar análisis' : 'Ver análisis del escenario';
+                    b.setAttribute('title', rotulo);
+                    if (!b.querySelector('[data-sim="ojoTexto"]')) { b.setAttribute('aria-label', rotulo); }
+                });
+                escribir('ojoTexto', abierto ? 'Ocultar análisis del escenario' : 'Ver análisis del escenario');
+            }
+
+            function abrirModal() {
+                focoPrevio = document.activeElement;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.style.overflow = 'hidden';   // el fondo no se desplaza mientras esta abierto
+                pintarOjos(true);
+                const caja = modal.querySelector('.sim-modal-caja');
+                if (caja) { caja.scrollTop = 0; }
+                const cerrar = modal.querySelector('.sim-ojo');
+                if (cerrar) { cerrar.focus(); }
+            }
+
+            function cerrarModal() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = '';
+                pintarOjos(false);
+                if (focoPrevio && focoPrevio.focus) { focoPrevio.focus(); }
+            }
+
+            const modalAbierto = () => !modal.classList.contains('hidden');
+
+            ojos.forEach((b) => {
+                b.addEventListener('click', () => { modalAbierto() ? cerrarModal() : abrirModal(); });
+            });
+            modal.querySelectorAll('[data-cerrar-sim]').forEach((el) => {
+                el.addEventListener('click', cerrarModal);
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modalAbierto()) { cerrarModal(); }
+            });
+
             actualizar(SIM.base);
+            pintarOjos(false);
         }
 
         /* ---------------- Logo alternante (uno por modulo) ---------------- */

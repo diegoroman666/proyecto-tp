@@ -36,9 +36,15 @@ proyecto-tp.html#ge-caso      abre Gestión en el caso práctico
 
 ## El simulador del caso práctico
 
-Dentro de **Evaluación → Caso Práctico** hay una calculadora en vivo. Se ajusta cuántos portones
-se fabrican al año y las **dos** tablas de flujo de caja —el Puro y el Financiado— se recalculan
-enteras: ingresos, costos de insumos, flujo neto, periodo de recuperación y las conclusiones.
+Dentro de **Evaluación → Caso Práctico**, la fila *Ingresos por Ventas* de cada tabla trae un
+campo con la cantidad de unidades al año (de 1 a 60), con botones − y +. Las dos tablas comparten
+el mismo número: al cambiarlo en cualquiera de ellas, ambas se recalculan enteras —ingresos,
+costos de insumos, flujo neto, periodo de recuperación y los textos de conclusión.
+
+El botón con forma de **ojo** abre una ventana emergente que oscurece el fondo y explica el
+escenario: el ritmo de trabajo, las ventas del año, el flujo neto de los dos casos, el punto de
+equilibrio y de dónde sale cada número. Se cierra con el mismo ojo, con la tecla Escape o
+pulsando fuera de ella.
 
 El modelo que hay detrás es el mismo del ejercicio original:
 
