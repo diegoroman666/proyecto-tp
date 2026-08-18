@@ -90,6 +90,21 @@
         .indicator-pulse {
             animation: pulse-green 2s infinite;
         }
+        /* Simulador: destello breve en las cifras que acaban de cambiar,
+           para que se vea de un vistazo cuales se mueven y cuales no. */
+        @keyframes sim-flash {
+            from { background-color: rgba(0, 243, 255, 0.28); }
+            to   { background-color: transparent; }
+        }
+        .sim-flash { animation: sim-flash 0.7s ease-out; }
+        @media (prefers-reduced-motion: reduce) {
+            .sim-flash { animation: none; }
+        }
+        .sim-preset.activo {
+            border-color: #00f3ff;
+            color: #00f3ff;
+            background: rgba(0, 243, 255, 0.12);
+        }
         /* Vistas: solo un modulo visible a la vez */
         .view[hidden] { display: none; }
         .view { animation: view-in 0.45s ease both; }
@@ -400,15 +415,80 @@
             </section>
 
             <section id="ev-caso" class="w-full pt-16">
-                <div class="text-center mb-12">
+                <div class="text-center mb-10">
                     <div class="inline-block px-4 py-1 rounded-full border border-neon-purple/50 bg-neon-purple/10 text-neon-purple text-xs font-bold tracking-widest uppercase mb-4">
                         Demostración Práctica Estudiantil
                     </div>
                     <h2 class="font-display text-4xl font-bold text-white mb-4">Proyección Financiera a 5 Años: Taller de Portones</h2>
-                    <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed">Para implementar un taller de fabricación metálica e instalación de portones se requiere una inversión inicial de <strong>$5.000.000</strong> en maquinaria y herramientas. Analizaremos en detalle el desglose operativo comparando el escenario Puro frente al Financiado.</p>
+                    <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed">Para implementar un taller de fabricación metálica e instalación de portones se requiere una inversión inicial de <strong>$5.000.000</strong> en maquinaria y herramientas. Cada portón se vende en <strong class="text-neon-green">$1.000.000</strong> y consume <strong>$500.000</strong> en fierros e insumos.</p>
+                    <p class="text-gray-400 max-w-3xl mx-auto leading-relaxed mt-3">Mueve el simulador y observa cómo cambian los dos flujos de caja: <strong class="text-white">el Puro y el Financiado</strong>.</p>
                 </div>
 
-                <!-- Caso A: Flujo Puro -->
+                <!-- Datos del modelo: se leen una vez, no necesitan seguir al usuario -->
+                <div class="glass-panel rounded-2xl border border-gray-800 px-5 py-4 mb-4">
+                    <div class="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm text-gray-400">
+                        <span class="text-xs text-gray-500 uppercase tracking-widest font-bold">Por cada portón</span>
+                        <span>Precio de venta <strong class="font-mono text-green-400 ml-1">+$1.000.000</strong></span>
+                        <span>Fierros e insumos <strong class="font-mono text-gray-300 ml-1">-$500.000</strong></span>
+                        <span class="text-white">Te queda <strong class="font-mono text-neon-blue ml-1">+$500.000</strong>
+                            <span class="text-xs text-gray-500 ml-1">(margen de contribución)</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- ============ SIMULADOR (acompaña al usuario mientras recorre las tablas) ============ -->
+                <div class="lg:sticky lg:top-24 z-30 mb-10">
+                    <div class="rounded-3xl border border-neon-blue/50 bg-gray-950/95 backdrop-blur-md p-5 md:p-6 shadow-2xl shadow-black/60">
+
+                        <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+                            <label for="sim-unidades" class="text-sm font-bold text-white leading-snug shrink-0 md:max-w-[190px]">
+                                <i class="fa-solid fa-sliders text-neon-blue mr-2"></i>Portones fabricados y vendidos <span class="text-neon-blue">por año</span>
+                            </label>
+                            <div class="flex items-center gap-4 flex-1">
+                                <input id="sim-unidades" type="range" min="1" max="60" step="1" value="12"
+                                       class="flex-1 h-2 cursor-pointer" style="accent-color:#00f3ff"
+                                       aria-describedby="sim-ritmo">
+                                <input id="sim-unidades-num" type="number" min="1" max="60" step="1" value="12"
+                                       class="w-20 bg-black/60 border border-neon-blue/50 rounded-xl text-center text-xl font-bold text-neon-blue py-1.5 focus:outline-none focus:border-neon-blue"
+                                       aria-label="Cantidad de portones por año">
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-2 mt-3">
+                            <span id="sim-ritmo" class="text-xs text-gray-400 mr-2">Ritmo: <strong class="text-white" data-sim="ritmo">1 portón al mes</strong></span>
+                            <button type="button" data-preset="6"  class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">6 al año</button>
+                            <button type="button" data-preset="12" class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">1 al mes (12)</button>
+                            <button type="button" data-preset="24" class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">2 al mes (24)</button>
+                            <button type="button" data-preset="48" class="sim-preset px-3 py-1 text-xs font-bold rounded-full border border-gray-600 text-gray-300 hover:border-neon-blue hover:text-neon-blue transition">1 por semana (48)</button>
+                        </div>
+
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mt-4">
+                            <div class="bg-black/40 rounded-xl border border-gray-800 px-3 py-2 text-center">
+                                <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Ventas al año</span>
+                                <span class="font-mono text-sm md:text-base font-bold text-green-400" data-sim="ingresosResumen">$12.000.000</span>
+                            </div>
+                            <div class="bg-black/40 rounded-xl border border-gray-800 px-3 py-2 text-center">
+                                <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Flujo neto (Puro)</span>
+                                <span class="font-mono text-sm md:text-base font-bold text-neon-blue" data-sim="flujoAResumen">$2.000.000</span>
+                            </div>
+                            <div class="bg-black/40 rounded-xl border border-gray-800 px-3 py-2 text-center">
+                                <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Flujo neto (Financiado)</span>
+                                <span class="font-mono text-sm md:text-base font-bold text-neon-purple" data-sim="flujoBResumen">$1.200.000</span>
+                            </div>
+                            <div class="bg-black/40 rounded-xl border border-gray-800 px-3 py-2 text-center">
+                                <span class="block text-[10px] text-gray-500 uppercase tracking-widest">Punto de equilibrio</span>
+                                <span class="font-mono text-sm md:text-base font-bold text-yellow-400"><span data-sim="equilibrio">8</span> al año</span>
+                            </div>
+                        </div>
+
+                        <!-- Lectura del resultado -->
+                        <div id="sim-mensaje" class="mt-3 px-4 py-3 rounded-xl border text-sm leading-relaxed text-gray-300 border-neon-blue/40 bg-neon-blue/5">
+                            <span data-sim="mensaje">Este es el caso base del ejercicio: 12 portones al año, uno por mes.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============ Caso A: Flujo Puro ============ -->
                 <div class="glass-panel rounded-3xl p-1 md:p-2 overflow-hidden border border-neon-blue/50 shadow-2xl relative mb-12">
                     <div class="bg-gray-900/95 rounded-2xl p-6 md:p-8">
                         <h3 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-wallet text-neon-blue mr-2"></i>Caso A: Flujo de Caja PURO (100% Capital Propios)</h3>
@@ -440,23 +520,23 @@
                                     <tr class="border-b border-gray-800">
                                         <td class="py-3 px-4 text-green-400"><i class="fa-solid fa-plus mr-2"></i>Ingresos por Ventas</td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
                                     </tr>
                                     <tr class="border-b border-gray-800">
                                         <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Operativos (Fierros/Insumos)</td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
                                     </tr>
                                     <tr class="border-b border-gray-800">
-                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Fijos (Arriendo/Luz Taller)</td>
+                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Fijos (Arriendo/Luz Taller) <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans">no cambia</span></td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
                                         <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
                                         <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
@@ -465,7 +545,7 @@
                                         <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
                                     </tr>
                                     <tr class="border-b border-gray-800">
-                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Gastos Administrativos y Marketing</td>
+                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Gastos Administrativos y Marketing <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans">no cambia</span></td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
                                         <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
                                         <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
@@ -476,11 +556,11 @@
                                     <tr class="bg-white/5 font-bold text-sm">
                                         <td class="py-4 px-4 text-white uppercase tracking-wider">Flujo Neto Anual</td>
                                         <td class="py-4 px-4 text-right text-red-400">-$5.000.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-blue">+$2.000.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-blue">+$2.000.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-blue">+$2.000.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-blue">+$2.000.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-blue">+$2.000.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-blue" data-sim="flujoA">+$2.000.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-blue" data-sim="flujoA">+$2.000.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-blue" data-sim="flujoA">+$2.000.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-blue" data-sim="flujoA">+$2.000.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-blue" data-sim="flujoA">+$2.000.000</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -488,17 +568,18 @@
                         <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
                             <div class="bg-black/40 p-4 rounded-xl border border-neon-blue/30 text-sm text-gray-300 flex-1">
                                 <p class="font-bold text-neon-blue mb-1"><i class="fa-solid fa-circle-info mr-2"></i>Conclusión del Flujo Puro:</p>
-                                <p>Al no tener deudas bancarias, el 100% de la inversión inicial sale del bolsillo del estudiante ($5.000.000). Aunque el negocio es sólido y genera un flujo neto constante de $2.000.000 anuales, el periodo de recuperación se extiende hasta los <strong>2.5 años</strong> debido a que todo el peso recae en recursos propios.</p>
+                                <p>Al no tener deudas bancarias, el 100% de la inversión inicial sale del bolsillo del estudiante ($5.000.000). Fabricando <strong class="text-white" data-sim="unidadesTexto">12</strong> portones al año, el negocio genera un flujo neto de <strong class="text-white" data-sim="flujoATexto">$2.000.000</strong> anuales, de modo que la inversión se recupera en <strong class="text-white" data-sim="priATexto">2,5 años</strong>.</p>
                             </div>
                             <div class="bg-neon-blue/10 border border-neon-blue p-4 rounded-xl text-right min-w-[220px]">
                                 <span class="text-gray-400 text-xs block uppercase">Periodo Recuperación (PRI)</span>
-                                <span class="text-xl font-bold text-white">2.5 Años <span class="text-xs font-normal text-gray-400">(Mediados Año 3)</span></span>
+                                <span class="text-xl font-bold text-white" data-sim="priA">2,5 Años</span>
+                                <span class="block text-xs font-normal text-gray-400" data-sim="priADetalle">(2 años 6 meses)</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Caso B: Flujo Financiado -->
+                <!-- ============ Caso B: Flujo Financiado ============ -->
                 <div class="glass-panel rounded-3xl p-1 md:p-2 overflow-hidden border border-neon-purple/50 shadow-2xl relative">
                     <div class="bg-gray-900/95 rounded-2xl p-6 md:p-8">
                         <h3 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-building-columns text-neon-purple mr-2"></i>Caso B: Flujo de Caja FINANCIADO (Con Préstamo Bancario)</h3>
@@ -530,23 +611,23 @@
                                     <tr class="border-b border-gray-800">
                                         <td class="py-3 px-4 text-green-400"><i class="fa-solid fa-plus mr-2"></i>Ingresos por Ventas</td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
-                                        <td class="py-3 px-4 text-right text-green-400">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
+                                        <td class="py-3 px-4 text-right text-green-400" data-sim="ingresos">+$12.000.000</td>
                                     </tr>
                                     <tr class="border-b border-gray-800">
                                         <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Operativos (Fierros/Insumos)</td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
-                                        <td class="py-3 px-4 text-right text-gray-400">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
+                                        <td class="py-3 px-4 text-right text-gray-400" data-sim="costoVar">-$6.000.000</td>
                                     </tr>
                                     <tr class="border-b border-gray-800">
-                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Fijos (Arriendo/Luz Taller)</td>
+                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Costos Fijos (Arriendo/Luz Taller) <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans">no cambia</span></td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
                                         <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
                                         <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
@@ -555,7 +636,7 @@
                                         <td class="py-3 px-4 text-right text-gray-400">-$2.500.000</td>
                                     </tr>
                                     <tr class="border-b border-gray-800">
-                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Gastos Administrativos y Marketing</td>
+                                        <td class="py-3 px-4 text-gray-300"><i class="fa-solid fa-minus mr-2"></i>Gastos Administrativos y Marketing <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans">no cambia</span></td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
                                         <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
                                         <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
@@ -564,7 +645,7 @@
                                         <td class="py-3 px-4 text-right text-gray-400">-$1.500.000</td>
                                     </tr>
                                     <tr class="border-b border-gray-800 bg-yellow-900/25">
-                                        <td class="py-3 px-4 text-yellow-400"><i class="fa-solid fa-arrow-down mr-2 text-xs"></i>Cuota Préstamo Bancario</td>
+                                        <td class="py-3 px-4 text-yellow-400"><i class="fa-solid fa-arrow-down mr-2 text-xs"></i>Cuota Préstamo Bancario <span class="ml-1 text-[10px] uppercase tracking-wider text-yellow-500 border border-yellow-500/40 rounded px-1.5 py-0.5 font-sans">no cambia</span></td>
                                         <td class="py-3 px-4 text-right text-gray-600">-</td>
                                         <td class="py-3 px-4 text-right text-yellow-400">-$800.000</td>
                                         <td class="py-3 px-4 text-right text-yellow-400">-$800.000</td>
@@ -575,11 +656,11 @@
                                     <tr class="bg-white/5 font-bold text-sm">
                                         <td class="py-4 px-4 text-white uppercase tracking-wider">Flujo Neto para el Estudiante</td>
                                         <td class="py-4 px-4 text-right text-red-400">-$2.000.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-purple">+$1.200.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-purple">+$1.200.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-purple">+$1.200.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-purple">+$1.200.000</td>
-                                        <td class="py-4 px-4 text-right text-neon-purple">+$1.200.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-purple" data-sim="flujoB">+$1.200.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-purple" data-sim="flujoB">+$1.200.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-purple" data-sim="flujoB">+$1.200.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-purple" data-sim="flujoB">+$1.200.000</td>
+                                        <td class="py-4 px-4 text-right text-neon-purple" data-sim="flujoB">+$1.200.000</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -587,11 +668,12 @@
                         <div class="mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
                             <div class="bg-black/40 p-4 rounded-xl border border-neon-purple/30 text-sm text-gray-300 flex-1">
                                 <p class="font-bold text-neon-purple mb-1"><i class="fa-solid fa-circle-info mr-2"></i>Conclusión del Flujo Financiado (Apalancamiento):</p>
-                                <p>Mediante el uso inteligente de un crédito de $3.000.000, el estudiante reduce su exposición de riesgo arriesgando sólo $2.000.000 propios. Aunque se descuenta la cuota anual del préstamo ($800.000), el flujo neto sigue siendo atractivo ($1.200.000 anuales) y permite acelerar el retorno de la inversión a sólo <strong>1.6 años</strong>.</p>
+                                <p>Mediante el uso inteligente de un crédito de $3.000.000, el estudiante reduce su exposición de riesgo arriesgando sólo $2.000.000 propios. Descontada la cuota anual del préstamo ($800.000), con <strong class="text-white" data-sim="unidadesTexto">12</strong> portones al año le quedan <strong class="text-white" data-sim="flujoBTexto">$1.200.000</strong> anuales y recupera lo suyo en <strong class="text-white" data-sim="priBTexto">1,7 años</strong>.</p>
                             </div>
                             <div class="bg-neon-purple/10 border border-neon-purple p-4 rounded-xl text-right min-w-[220px]">
                                 <span class="text-gray-400 text-xs block uppercase">Periodo Recuperación (PRI)</span>
-                                <span class="text-xl font-bold text-white">1.6 Años <span class="text-xs font-normal text-gray-400">(Aprox 1 año 8 meses)</span></span>
+                                <span class="text-xl font-bold text-white" data-sim="priB">1,7 Años</span>
+                                <span class="block text-xs font-normal text-gray-400" data-sim="priBDetalle">(1 año 8 meses)</span>
                             </div>
                         </div>
                     </div>
@@ -1190,6 +1272,176 @@
 
         window.addEventListener('hashchange', handleHash);
         handleHash();
+
+        /* ---------------- Simulador del caso practico ----------------
+           Modelo del ejercicio: cada porton se vende en $1.000.000 y consume $500.000 en
+           fierros e insumos, de modo que aporta $500.000 para cubrir los costos fijos.
+           El arriendo, la luz, el marketing y la cuota del prestamo NO dependen de cuanto
+           se fabrique: por eso, al producir mas, la ganancia crece mucho mas rapido que
+           las ventas. Esa es la leccion que el simulador deja ver. */
+        const SIM = {
+            precio: 1000000,          // precio de venta de un porton
+            insumos: 500000,          // fierros e insumos que consume cada porton
+            costosFijos: 2500000,     // arriendo y luz del taller
+            gastosAdmin: 1500000,     // administracion y marketing
+            inversionTotal: 5000000,  // maquinaria y herramientas (Caso A)
+            inversionPropia: 2000000, // capital propio arriesgado (Caso B)
+            cuotaPrestamo: 800000,    // cuota anual del credito (Caso B)
+            base: 12,                 // el caso base del ejercicio: uno por mes
+            min: 1,
+            max: 60
+        };
+
+        const simSlider = document.getElementById('sim-unidades');
+        const simCampo = document.getElementById('sim-unidades-num');
+
+        if (simSlider && simCampo) {
+            const pesos = (n) => '$' + Math.round(Math.abs(n)).toLocaleString('es-CL');
+            const conSigno = (n) => (Math.round(n) === 0 ? '' : (n < 0 ? '-' : '+')) + pesos(n);
+            const decimal = (n) => n.toFixed(1).replace('.', ',');
+            const veces = (n) => (Math.abs(n - Math.round(n)) < 0.05 ? String(Math.round(n)) : decimal(n));
+
+            function enMeses(anios) {
+                const total = Math.round(anios * 12);
+                const a = Math.floor(total / 12), m = total % 12;
+                const partes = [];
+                if (a) { partes.push(a + (a === 1 ? ' año' : ' años')); }
+                if (m) { partes.push(m + (m === 1 ? ' mes' : ' meses')); }
+                return partes.length ? partes.join(' ') : 'menos de un mes';
+            }
+
+            function textoRitmo(u) {
+                if (u === 1) { return '1 portón al año'; }
+                const porMes = u / 12;
+                if (Number.isInteger(porMes)) {
+                    return porMes === 1 ? '1 portón al mes' : porMes + ' portones al mes';
+                }
+                // Bajo uno por mes se lee mejor al reves: uno cada tantos meses
+                if (porMes < 1) { return '1 portón cada ' + decimal(12 / u) + ' meses'; }
+                return 'aprox. ' + decimal(porMes) + ' portones al mes';
+            }
+
+            // Escribe el valor y lo hace destellar solo si de verdad cambio
+            function escribir(clave, texto) {
+                document.querySelectorAll('[data-sim="' + clave + '"]').forEach((el) => {
+                    if (el.textContent === texto) { return; }
+                    el.textContent = texto;
+                    el.classList.remove('sim-flash');
+                    void el.offsetWidth;
+                    el.classList.add('sim-flash');
+                });
+            }
+
+            function pintar(clave, positivo, colorOk) {
+                document.querySelectorAll('[data-sim="' + clave + '"]').forEach((el) => {
+                    el.classList.toggle(colorOk, positivo);
+                    el.classList.toggle('text-red-400', !positivo);
+                });
+            }
+
+            const margen = SIM.precio - SIM.insumos;
+            const fijos = SIM.costosFijos + SIM.gastosAdmin;
+            const equilibrioA = Math.ceil(fijos / margen);
+            const flujoBase = SIM.base * margen - fijos;
+            const cajaMensaje = document.getElementById('sim-mensaje');
+
+            function actualizar(unidades) {
+                const ingresos = unidades * SIM.precio;
+                const insumos = unidades * SIM.insumos;
+                const flujoA = ingresos - insumos - fijos;
+                const flujoB = flujoA - SIM.cuotaPrestamo;
+
+                // Tablas
+                escribir('ingresos', conSigno(ingresos));
+                escribir('costoVar', conSigno(-insumos));
+                escribir('flujoA', conSigno(flujoA));
+                escribir('flujoB', conSigno(flujoB));
+                pintar('flujoA', flujoA >= 0, 'text-neon-blue');
+                pintar('flujoB', flujoB >= 0, 'text-neon-purple');
+
+                // Periodo de recuperacion de cada caso
+                [['A', SIM.inversionTotal, flujoA], ['B', SIM.inversionPropia, flujoB]].forEach(([caso, inv, flujo]) => {
+                    if (flujo > 0) {
+                        const anios = inv / flujo;
+                        escribir('pri' + caso, decimal(anios) + ' Años');
+                        escribir('pri' + caso + 'Detalle', anios > 5 ? '(supera los 5 años del proyecto)' : '(' + enMeses(anios) + ')');
+                        escribir('pri' + caso + 'Texto', decimal(anios) + ' años');
+                    } else {
+                        escribir('pri' + caso, 'No se recupera');
+                        escribir('pri' + caso + 'Detalle', '(el flujo anual no es positivo)');
+                        escribir('pri' + caso + 'Texto', 'nunca, a este ritmo');
+                    }
+                });
+
+                // Resumen y textos de conclusion
+                escribir('unidadesTexto', String(unidades));
+                escribir('flujoATexto', pesos(flujoA));
+                escribir('flujoBTexto', pesos(flujoB));
+                escribir('ingresosResumen', pesos(ingresos));
+                escribir('flujoAResumen', pesos(flujoA));
+                escribir('flujoBResumen', pesos(flujoB));
+                escribir('equilibrio', String(equilibrioA));
+                escribir('ritmo', textoRitmo(unidades));
+
+                // Mensaje pedagogico segun el escenario
+                let mensaje, borde, fondo;
+                if (flujoA < 0) {
+                    mensaje = 'Con ' + unidades + (unidades === 1 ? ' portón' : ' portones') + ' al año no alcanzas a pagar los costos fijos: el taller pierde plata. '
+                            + 'Necesitas fabricar al menos ' + equilibrioA + ' al año solo para empatar.';
+                    borde = 'border-red-500/50'; fondo = 'bg-red-500/10';
+                } else if (flujoA === 0) {
+                    mensaje = 'Con ' + equilibrioA + ' portones al año estás justo en el punto de equilibrio: cubres todos los costos, '
+                            + 'pero no ganas nada y nunca recuperas la inversión. Recién desde el portón ' + (equilibrioA + 1) + ' empiezas a ganar.';
+                    borde = 'border-yellow-500/50'; fondo = 'bg-yellow-500/10';
+                } else if (unidades === SIM.base) {
+                    mensaje = 'Este es el caso base del ejercicio: 12 portones al año, uno por mes.';
+                    borde = 'border-neon-blue/40'; fondo = 'bg-neon-blue/5';
+                } else if (unidades > SIM.base) {
+                    mensaje = 'Fabricando ' + unidades + ' portones al año (' + textoRitmo(unidades) + ') vendes '
+                            + veces(unidades / SIM.base) + ' veces lo del caso base… pero tu flujo neto es '
+                            + veces(flujoA / flujoBase) + ' veces mayor. El arriendo, la luz y el marketing cuestan lo mismo '
+                            + 'fabriques 12 o ' + unidades + ': todo lo que produces de más queda casi entero como ganancia.';
+                    borde = 'border-neon-green/50'; fondo = 'bg-neon-green/10';
+                } else {
+                    mensaje = 'Con ' + unidades + (unidades === 1 ? ' portón' : ' portones') + ' al año sigues cubriendo los costos fijos, '
+                            + 'pero te queda bastante menos que en el caso base. Los costos fijos se reparten entre menos unidades.';
+                    borde = 'border-yellow-500/40'; fondo = 'bg-yellow-500/10';
+                }
+                escribir('mensaje', mensaje);
+                if (cajaMensaje) {
+                    cajaMensaje.className = 'mt-3 px-4 py-3 rounded-xl border text-sm leading-relaxed text-gray-300 ' + borde + ' ' + fondo;
+                }
+
+                document.querySelectorAll('.sim-preset').forEach((b) => {
+                    b.classList.toggle('activo', Number(b.dataset.preset) === unidades);
+                });
+            }
+
+            function fijarUnidades(valor) {
+                let u = Math.round(Number(valor));
+                if (!Number.isFinite(u)) { u = SIM.base; }
+                u = Math.min(SIM.max, Math.max(SIM.min, u));
+                simSlider.value = u;
+                simCampo.value = u;
+                actualizar(u);
+            }
+
+            simSlider.addEventListener('input', () => fijarUnidades(simSlider.value));
+            simCampo.addEventListener('input', () => {
+                // se recalcula al vuelo, pero sin forzar el valor mientras se escribe
+                const u = Number(simCampo.value);
+                if (Number.isFinite(u) && u >= SIM.min && u <= SIM.max) {
+                    simSlider.value = Math.round(u);
+                    actualizar(Math.round(u));
+                }
+            });
+            simCampo.addEventListener('change', () => fijarUnidades(simCampo.value));
+            document.querySelectorAll('.sim-preset').forEach((b) => {
+                b.addEventListener('click', () => fijarUnidades(b.dataset.preset));
+            });
+
+            actualizar(SIM.base);
+        }
 
         /* ---------------- Logo alternante (uno por modulo) ---------------- */
         const logoUrls = [

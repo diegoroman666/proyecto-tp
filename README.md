@@ -9,6 +9,12 @@ sin perder el control de los plazos.
 Todo vive en **[`proyecto-tp.html`](proyecto-tp.html)**: un único archivo, sin dependencias
 locales ni proceso de compilación. Se abre haciendo doble clic.
 
+Existe además **[`proyecto-tp-offline.html`](proyecto-tp-offline.html)**, idéntico en contenido
+pero con Tailwind, Three.js, Font Awesome, las tipografías y los logos incrustados dentro del
+propio archivo. Pesa unos 2,4 MB y **funciona sin conexión a internet**: es el que conviene
+llevar al stand por si la red falla. El archivo normal es más liviano y es el que se publica en
+la web.
+
 Contiene dos módulos que se navegan entre sí:
 
 | Módulo | Contenido | Ruta |
@@ -27,6 +33,28 @@ proyecto-tp.html#/gestion     abre el módulo de Gestión
 proyecto-tp.html#ev-e4        abre Evaluación en la Etapa 4 (VAN)
 proyecto-tp.html#ge-caso      abre Gestión en el caso práctico
 ```
+
+## El simulador del caso práctico
+
+Dentro de **Evaluación → Caso Práctico** hay una calculadora en vivo. Se ajusta cuántos portones
+se fabrican al año y las **dos** tablas de flujo de caja —el Puro y el Financiado— se recalculan
+enteras: ingresos, costos de insumos, flujo neto, periodo de recuperación y las conclusiones.
+
+El modelo que hay detrás es el mismo del ejercicio original:
+
+| Concepto | Valor | ¿Cambia al producir más? |
+|---|---|---|
+| Precio de venta de un portón | $1.000.000 | Sí, por unidad |
+| Fierros e insumos por portón | $500.000 | Sí, por unidad |
+| Arriendo y luz del taller | $2.500.000 al año | **No** |
+| Administración y marketing | $1.500.000 al año | **No** |
+| Cuota del préstamo (Caso B) | $800.000 al año | **No** |
+
+Ahí está la lección: como los costos fijos no se mueven, **la ganancia crece mucho más rápido
+que las ventas**. Al pasar de 12 a 24 portones al año las ventas se duplican, pero el flujo neto
+se multiplica por cuatro ($2.000.000 → $8.000.000). Las filas que no cambian están marcadas en
+la tabla con una etiqueta *«no cambia»*, y el simulador avisa cuando la producción cae bajo el
+punto de equilibrio (8 portones al año), donde el taller deja de ganar dinero.
 
 ## Cómo está hecho
 
