@@ -1,8 +1,8 @@
 # Evaluación y Gestión de Proyectos — LIR 2026
 
 Sitio web de la **Semana TP** del Liceo Industrial de Rengo. Reúne en un solo archivo los dos
-módulos de la unidad: cómo saber si un proyecto técnico es rentable, y cómo llevarlo a cabo
-sin perder el control de los plazos.
+módulos de la unidad: cómo saber si un proyecto técnico es rentable, y cómo transformar esa
+idea en un resultado concreto avanzando de manera ordenada.
 
 ## El sitio
 
@@ -20,7 +20,7 @@ Contiene dos módulos que se navegan entre sí:
 | Módulo | Contenido | Ruta |
 |---|---|---|
 | **Evaluación de Proyectos** | Generación de la idea, estudios de formulación, flujo de caja puro y financiado, VAN, TIR, PRI, marketing, y un caso práctico a 5 años de un taller de portones | `#/evaluacion` |
-| **Gestión de Proyectos** | Acta de constitución, alcance, Carta Gantt, control de cambios, liderazgo y cierre | `#/gestion` |
+| **Gestión de Proyectos** | Las cinco etapas del proyecto: idea y objetivo, planificación, organización, monitoreo y cierre, con el acta de constitución, la Carta Gantt y las lecciones aprendidas | `#/gestion` |
 
 Se salta de uno al otro con el botón de la barra superior o con la tarjeta al pie de cada módulo.
 
@@ -33,6 +33,23 @@ proyecto-tp.html#/gestion     abre el módulo de Gestión
 proyecto-tp.html#ev-e4        abre Evaluación en la Etapa 4 (VAN)
 proyecto-tp.html#ge-caso      abre Gestión en el caso práctico
 ```
+
+## Las cinco etapas de la gestión
+
+El módulo de Gestión recorre el proyecto completo, de la idea al cierre. Cada etapa responde a
+una pregunta distinta y termina con esa pregunta escrita para poder plantearla en el stand:
+
+| Etapa | Pregunta clave | Qué se ve | Ruta |
+|---|---|---|---|
+| 1. Idea y objetivo | ¿Qué queremos conseguir? | El acta de constitución: objetivo, director, integrantes y resultado esperado | `#ge-e1` |
+| 2. Planificación | ¿Qué debemos hacer y cuándo? | El cronograma o Carta Gantt: cuándo, cuánto tiempo, quién y qué va antes que qué | `#ge-e2` |
+| 3. Organización | ¿Quién hará qué? | Personas + tareas + responsabilidades + recursos | `#ge-e3` |
+| 4. Problemas y monitoreo | ¿Estamos avanzando según lo planificado? | Detectamos → analizamos → solucionamos → ajustamos | `#ge-e4` |
+| 5. Cierre | ¿Qué conseguimos y qué aprendimos? | Objetivo → resultado → aprendizajes, y las lecciones aprendidas | `#ge-e5` |
+
+El caso práctico (`#ge-caso`) baja las etapas 2 y 3 al papel con dos cronogramas del mismo portón:
+uno con el trabajo repartido entre varios (4 semanas) y otro con una sola persona haciéndolo todo
+(5 semanas). La misma idea, organizada de otra forma, tarda un 25% más.
 
 ## El simulador del caso práctico
 
@@ -119,6 +136,15 @@ python -m http.server 8765
 ```
 
 Luego visita `http://localhost:8765/proyecto-tp.html`.
+
+## Publicación
+
+Cada vez que se empuja algo a `main`, el flujo de trabajo
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) publica el repositorio completo en
+**GitHub Pages**. No hay que compilar ni subir nada a mano: basta con abrir el enlace del sitio.
+
+La raíz es [`index.html`](index.html), que redirige a `proyecto-tp.html` conservando el ancla, de
+modo que un enlace como `.../#/gestion` llega directo al módulo de Gestión.
 
 ## Créditos
 
