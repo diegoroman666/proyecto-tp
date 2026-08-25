@@ -3,6 +3,11 @@
 # Cada empuje a main publica el repositorio tal cual: no hay compilacion ni
 # dependencias que instalar, porque el sitio es HTML plano. La raiz es
 # index.html, que redirige a proyecto-tp.html conservando el ancla.
+#
+# Requisito, una sola vez: en Settings -> Pages hay que dejar Source en
+# "GitHub Actions". Activar Pages es una operacion de administrador del
+# repositorio, y el token con el que corre este flujo no la tiene: intentarlo
+# desde aqui responde "Resource not accessible by integration".
 name: Desplegar el sitio
 
 on:
@@ -32,10 +37,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Preparar GitHub Pages
-        # enablement activa Pages la primera vez, sin tocar la configuracion a mano
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Empaquetar el sitio
         uses: actions/upload-pages-artifact@v3
