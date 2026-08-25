@@ -143,6 +143,11 @@ Cada vez que se empuja algo a `main`, el flujo de trabajo
 [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) publica el repositorio completo en
 **GitHub Pages**. No hay que compilar ni subir nada a mano: basta con abrir el enlace del sitio.
 
+Hay un único paso previo, y se hace una sola vez: en **Settings → Pages**, dejar *Source* en
+**GitHub Actions**. Activar Pages es una operación de administrador del repositorio, así que el
+flujo de trabajo no puede hacerlo por su cuenta. Hecho eso, el sitio queda en
+`https://diegoroman666.github.io/proyecto-tp/` y cada empuje a `main` lo actualiza solo.
+
 La raíz es [`index.html`](index.html), que redirige a `proyecto-tp.html` conservando el ancla, de
 modo que un enlace como `.../#/gestion` llega directo al módulo de Gestión.
 
